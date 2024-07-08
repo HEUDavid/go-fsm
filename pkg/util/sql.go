@@ -1,4 +1,4 @@
-package internal
+package util
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ func parseUpdateSQL(sql string) ([]string, error) {
 	return []string{sqlparser.String(update.TableExprs), sqlparser.String(update.Exprs), sqlparser.String(update.Where)}, nil
 }
 
-func mergeUpdateSQL(sqlStr1, sqlStr2 string) (string, error) {
+func MergeUpdateSQL(sqlStr1, sqlStr2 string) (string, error) {
 	if sqlStr1 == "" || sqlStr2 == "" {
 		return "", fmt.Errorf("ToSQL error: %s, %s", sqlStr1, sqlStr2)
 	}

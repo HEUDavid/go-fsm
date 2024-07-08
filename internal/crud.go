@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	. "github.com/HEUDavid/go-fsm/pkg/metadata"
+	"github.com/HEUDavid/go-fsm/pkg/util"
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -179,7 +180,7 @@ func UpdateExtData(c context.Context, tx *gorm.DB, extDataModel schema.Tabler, t
 		return _query(tx).Select(task.SelectColumns).Updates(task.ExtData)
 	})
 
-	sql, err := mergeUpdateSQL(sqlStr1, sqlStr2)
+	sql, err := util.MergeUpdateSQL(sqlStr1, sqlStr2)
 	if err != nil {
 		return err
 	}
