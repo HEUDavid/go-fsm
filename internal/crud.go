@@ -10,14 +10,14 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-func AddTaskFlow(tx *gorm.DB, m Models, task *Task[ExtDataEntity], queryFirst bool) error {
+func AddTaskFlow[ExtData ExtDataEntity](tx *gorm.DB, m Models, task *Task[ExtData], queryFirst bool) error {
 	if m.TaskFlowModel == nil || m.ExtDataModel == nil {
 		return nil
 	}
 	return nil
 }
 
-func AddUnique(tx *gorm.DB, uniqueRequestModel schema.Tabler, task *Task[ExtDataEntity], needModifyTaskID bool) (bool, error) {
+func AddUnique[ExtData ExtDataEntity](tx *gorm.DB, uniqueRequestModel schema.Tabler, task *Task[ExtData], needModifyTaskID bool) (bool, error) {
 	uniqueReq := struct {
 		RequestID string
 		TaskID    string
@@ -49,14 +49,14 @@ func AddUnique(tx *gorm.DB, uniqueRequestModel schema.Tabler, task *Task[ExtData
 	}
 }
 
-func CreateTaskTx(c context.Context, db *gorm.DB, m Models, task *Task[ExtDataEntity]) error {
+func CreateTaskTx[ExtData ExtDataEntity](c context.Context, db *gorm.DB, m Models, task *Task[ExtData]) error {
 	if err := db.Transaction(func(tx *gorm.DB) error { return _createTaskTx(c, tx, m, task) }); err != nil {
 		return err
 	}
 	return nil
 }
 
-func _createTaskTx(c context.Context, tx *gorm.DB, m Models, task *Task[ExtDataEntity]) error {
+func _createTaskTx[ExtData ExtDataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[ExtData]) error {
 	keyConflict, e := AddUnique(tx, m.UniqueRequestModel, task, true)
 	if e != nil {
 		return e
@@ -68,7 +68,7 @@ func _createTaskTx(c context.Context, tx *gorm.DB, m Models, task *Task[ExtDataE
 	if e = tx.Table(m.TaskModel.TableName()).Create(&task).Error; e != nil {
 		return e
 	}
-	if e = tx.Table(m.ExtDataModel.TableName()).Create(task.ExtData).Error; e != nil {
+	if e = tx.Table(m.ExtDataModel.TableName()).Create(task.GetExtData()).Error; e != nil {
 		return e
 	}
 
@@ -79,7 +79,7 @@ func _createTaskTx(c context.Context, tx *gorm.DB, m Models, task *Task[ExtDataE
 	return nil
 }
 
-func QueryTaskTx(c context.Context, db *gorm.DB, taskModel, extDataModel schema.Tabler, task *Task[ExtDataEntity]) error {
+func QueryTaskTx[ExtData ExtDataEntity](c context.Context, db *gorm.DB, taskModel, extDataModel schema.Tabler, task *Task[ExtData]) error {
 	stmt := db
 	if task.ID != "" {
 		// When the destination object has a primary key value, it will be used to construct the condition
@@ -107,14 +107,14 @@ func QueryTaskState(c context.Context, tx *gorm.DB, taskModel schema.Tabler, tas
 	return &state, nil
 }
 
-func UpdateTaskTx(c context.Context, db *gorm.DB, m Models, task *Task[ExtDataEntity], fsm FSM) error {
+func UpdateTaskTx[ExtData ExtDataEntity](c context.Context, db *gorm.DB, m Models, task *Task[ExtData], fsm FSM) error {
 	if err := db.Transaction(func(tx *gorm.DB) error { return _updateTaskTx(c, tx, m, task, fsm) }); err != nil {
 		return err
 	}
 	return nil
 }
 
-func _updateTaskTx(c context.Context, tx *gorm.DB, m Models, task *Task[ExtDataEntity], fsm FSM) error {
+func _updateTaskTx[ExtData ExtDataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[ExtData], fsm FSM) error {
 	keyConflict, e := AddUnique(tx, m.UniqueRequestModel, task, false)
 	if e != nil {
 		return e
@@ -157,7 +157,7 @@ func _updateTaskTx(c context.Context, tx *gorm.DB, m Models, task *Task[ExtDataE
 	return nil
 }
 
-func UpdateExtData(c context.Context, tx *gorm.DB, extDataModel schema.Tabler, task *Task[ExtDataEntity]) error {
+func UpdateExtData[ExtData ExtDataEntity](c context.Context, tx *gorm.DB, extDataModel schema.Tabler, task *Task[ExtData]) error {
 	if task.GetExtData() == nil {
 		return nil
 	}
