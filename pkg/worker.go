@@ -7,18 +7,17 @@ import (
 	"github.com/HEUDavid/go-fsm/pkg/util"
 )
 
-type IWorker interface {
+type IWorker[ExtData ExtDataEntity] interface {
 	Init()
 	Run()
 	HandleMsg(c context.Context, msg string) error
 }
 
-type Worker struct {
-	internal.Base
-	IWorker
+type Worker[ExtData ExtDataEntity] struct {
+	internal.Base[ExtData]
 }
 
-func (w *Worker) Init() {
+func (w *Worker[ExtData]) Init() {
 	if err := w.InitDB((*w.Config)["mysql"].(util.Config)); err != nil {
 		panic(err)
 	}
@@ -30,7 +29,7 @@ func (w *Worker) Init() {
 
 }
 
-func (w *Worker) Run() {
+func (w *Worker[ExtData]) Run() {
 	go func() {
 		for {
 			c, msg, ack := w.FetchMessage(context.Background())
@@ -42,7 +41,7 @@ func (w *Worker) Run() {
 	}()
 }
 
-func (w *Worker) HandleMsg(c context.Context, msg string) error {
+func (w *Worker[ExtData]) HandleMsg(c context.Context, msg string) error {
 
 	taskID := msg
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.TaskModel, taskID)
@@ -58,8 +57,8 @@ func (w *Worker) HandleMsg(c context.Context, msg string) error {
 		return nil
 	}
 
-	extData, _ := util.Assert[ExtDataEntity](util.ReflectNew(w.ExtDataModel))
-	task := GenTaskInstance("", taskID, extData)
+	extData, _ := util.Assert[ExtData](util.ReflectNew(w.ExtDataModel))
+	task := NewTaskInstance("", taskID, extData)
 
 	if err = internal.QueryTaskTx(c, w.GetDB(), w.TaskModel, w.ExtDataModel, task); err != nil {
 		return err
