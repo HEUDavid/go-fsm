@@ -6,7 +6,7 @@ import (
 )
 
 type Models struct {
-	ExtDataModel       ExtDataEntity
+	ExtDataModel       schema.Tabler
 	TaskModel          schema.Tabler
 	UniqueRequestModel schema.Tabler
 	TaskFlowModel      schema.Tabler // TaskFlow and ExtDataFlow is optional, if not set,
