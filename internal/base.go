@@ -8,26 +8,22 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-type IBase interface {
-	RegisterFSM(fsm FSM)
-	RegisterModel(extDataModel ExtDataEntity, taskModel, uniqueRequestModel schema.Tabler)
+type IBase[ExtData ExtDataEntity] interface {
+	RegisterModel(extDataModel, taskModel, uniqueRequestModel schema.Tabler)
 	RegisterDB(db db.IDB)
 	RegisterMQ(mq mq.IMQ)
+	RegisterFSM(fsm FSM[ExtData])
 }
 
-type Base struct {
+type Base[ExtData ExtDataEntity] struct {
 	Config *util.Config
-	FSM
 	Models
 	db.IDB
 	mq.IMQ
+	FSM[ExtData]
 }
 
-func (b *Base) RegisterFSM(fsm FSM) {
-	b.FSM = fsm
-}
-
-func (b *Base) RegisterModel(extDataModel ExtDataEntity, taskModel, uniqueRequestModel schema.Tabler) {
+func (b *Base[ExtData]) RegisterModel(extDataModel, taskModel, uniqueRequestModel schema.Tabler) {
 	if !(extDataModel != nil && taskModel != nil && uniqueRequestModel != nil) {
 		panic("[FSM] Model ext_data、task、unique_request should not be nil")
 	}
@@ -45,10 +41,14 @@ func (b *Base) RegisterModel(extDataModel ExtDataEntity, taskModel, uniqueReques
 	b.UniqueRequestModel = uniqueRequestModel
 }
 
-func (b *Base) RegisterDB(db db.IDB) {
+func (b *Base[ExtData]) RegisterDB(db db.IDB) {
 	b.IDB = db
 }
 
-func (b *Base) RegisterMQ(mq mq.IMQ) {
+func (b *Base[ExtData]) RegisterMQ(mq mq.IMQ) {
 	b.IMQ = mq
+}
+
+func (b *Base[ExtData]) RegisterFSM(fsm FSM[ExtData]) {
+	b.FSM = fsm
 }
