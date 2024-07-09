@@ -58,7 +58,7 @@ func (w *Worker[ExtData]) HandleMsg(c context.Context, msg string) error {
 	}
 
 	extData, _ := util.Assert[ExtData](util.ReflectNew(w.ExtDataModel))
-	task := NewTaskInstance("", taskID, extData)
+	task := GenTaskInstance("", taskID, extData)
 
 	if err = internal.QueryTaskTx(c, w.GetDB(), w.TaskModel, w.ExtDataModel, task); err != nil {
 		return err
