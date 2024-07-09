@@ -27,7 +27,7 @@ type IAdapter[ExtData ExtDataEntity] interface {
 }
 
 type Adapter[ExtData ExtDataEntity] struct {
-	internal.Base
+	internal.Base[ExtData]
 	ReInit         func() error
 	ReBeforeCreate func(c context.Context, task *Task[ExtData]) error
 	ReCreateCheck  func(c context.Context, task *Task[ExtData]) error
