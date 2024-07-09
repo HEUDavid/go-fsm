@@ -57,8 +57,8 @@ func (t *Task[ExtData]) SetOmitColumns(columns []string) {
 	t.OmitColumns = columns
 }
 
-func GenTaskInstance(requestID, taskID string, extData ExtDataEntity) *Task[ExtDataEntity] {
-	task := &Task[ExtDataEntity]{ExtData: extData}
+func NewTaskInstance[ExtData ExtDataEntity](requestID, taskID string, extData ExtData) *Task[ExtData] {
+	task := &Task[ExtData]{ExtData: extData}
 	task.RequestID = requestID
 	if taskID != "" {
 		task.SetTaskID(taskID)
