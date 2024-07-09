@@ -107,14 +107,14 @@ func QueryTaskState(c context.Context, tx *gorm.DB, taskModel schema.Tabler, tas
 	return &state, nil
 }
 
-func UpdateTaskTx[ExtData ExtDataEntity](c context.Context, db *gorm.DB, m Models, task *Task[ExtData], fsm FSM) error {
+func UpdateTaskTx[ExtData ExtDataEntity](c context.Context, db *gorm.DB, m Models, task *Task[ExtData], fsm FSM[ExtData]) error {
 	if err := db.Transaction(func(tx *gorm.DB) error { return _updateTaskTx(c, tx, m, task, fsm) }); err != nil {
 		return err
 	}
 	return nil
 }
 
-func _updateTaskTx[ExtData ExtDataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[ExtData], fsm FSM) error {
+func _updateTaskTx[ExtData ExtDataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[ExtData], fsm FSM[ExtData]) error {
 	keyConflict, e := AddUnique(tx, m.UniqueRequestModel, task, false)
 	if e != nil {
 		return e
