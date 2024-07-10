@@ -26,26 +26,25 @@ func AddUnique[Data DataEntity](tx *gorm.DB, m Models, task *Task[Data], needMod
 	}
 
 	err := tx.Table(m.UniqueRequestModel.TableName()).Create(&uniqueReq).Error
-
-	if err != nil {
-		mysqlErr, ok := err.(*mysql.MySQLError)
-		if !ok {
-			return false, err
-		}
-		switch mysqlErr.Number {
-		case 1062:
-			if needModifyTaskID { // Use the TaskID recorded in the DB to assign values, making the interface idempotent.
-				if err = tx.Table(m.UniqueRequestModel.TableName()).Where("request_id = ?", task.RequestID).Scan(&uniqueReq).Error; err != nil {
-					return true, err
-				}
-				task.SetTaskID(uniqueReq.TaskID)
-			}
-			return true, nil
-		}
-		return false, err
-	} else {
+	if err == nil {
 		return false, nil
 	}
+
+	mysqlErr, ok := err.(*mysql.MySQLError)
+	if !ok {
+		return false, err
+	}
+	switch mysqlErr.Number {
+	case 1062:
+		if needModifyTaskID { // Use the TaskID recorded in the DB to assign values, making the interface idempotent.
+			if err = tx.Table(m.UniqueRequestModel.TableName()).Where("request_id = ?", task.RequestID).Scan(&uniqueReq).Error; err != nil {
+				return true, err
+			}
+			task.SetTaskID(uniqueReq.TaskID)
+		}
+		return true, nil
+	}
+	return false, err
 }
 
 func CreateTaskTx[Data DataEntity](c context.Context, db *gorm.DB, m Models, task *Task[Data]) error {
