@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"fmt"
+	"strings"
 )
 
 type IState[Data DataEntity] interface {
@@ -56,6 +57,7 @@ type IFSM[Data DataEntity] interface {
 }
 
 type FSM[Data DataEntity] struct {
+	Name         string
 	InitialState State[Data]
 	States       map[string]State[Data]
 	Transitions  map[string]Transition[Data]
@@ -83,8 +85,25 @@ func (f *FSM[Data]) RegisterTransition(transitions ...Transition[Data]) {
 	}
 }
 
-func GenFSM[Data DataEntity](initial State[Data]) FSM[Data] {
+func (f *FSM[Data]) Description() string {
+	var transitions []string
+	for _, t := range f.Transitions {
+		transitions = append(transitions, t.GetName())
+	}
+	transitionStr := strings.Join(transitions, "\n")
+	template := `
+title: |md
+  # %s
+| {near: top-center}
+
+%s
+`
+	return fmt.Sprintf(template, f.Name, transitionStr)
+}
+
+func GenFSM[Data DataEntity](name string, initial State[Data]) FSM[Data] {
 	return FSM[Data]{
+		Name:         name,
 		InitialState: initial,
 		States:       map[string]State[Data]{},
 		Transitions:  map[string]Transition[Data]{},
