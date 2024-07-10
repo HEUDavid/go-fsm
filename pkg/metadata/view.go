@@ -1,7 +1,15 @@
 package metadata
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"oss.terrastruct.com/d2/d2compiler"
+	"oss.terrastruct.com/d2/d2exporter"
+	"oss.terrastruct.com/d2/d2layouts/d2dagrelayout"
+	"oss.terrastruct.com/d2/d2renderers/d2svg"
+	"oss.terrastruct.com/d2/d2themes/d2themescatalog"
+	"oss.terrastruct.com/d2/lib/textmeasure"
 	"strings"
 )
 
@@ -90,7 +98,6 @@ func (f *FSM[Data]) Description() string {
 	for _, t := range f.Transitions {
 		transitions = append(transitions, t.GetName())
 	}
-	transitionStr := strings.Join(transitions, "\n")
 	template := `
 title: |md
   # %s
@@ -98,7 +105,45 @@ title: |md
 
 %s
 `
-	return fmt.Sprintf(template, f.Name, transitionStr)
+	return fmt.Sprintf(template, f.Name, strings.Join(transitions, "\n"))
+}
+
+func (f *FSM[Data]) Draw(path string) error {
+	graph, config, err := d2compiler.Compile("", strings.NewReader(f.Description()), nil)
+	if err != nil {
+		return err
+	}
+	themeID := d2themescatalog.Terminal.ID
+	if err = graph.ApplyTheme(themeID); err != nil {
+		return err
+	}
+	ruler, err := textmeasure.NewRuler()
+	if err != nil {
+		return err
+	}
+	if err = graph.SetDimensions(nil, ruler, nil); err != nil {
+		return err
+	}
+	if err = d2dagrelayout.Layout(context.Background(), graph, nil); err != nil {
+		return err
+	}
+	diagram, err := d2exporter.Export(context.Background(), graph, nil)
+	if err != nil {
+		return err
+	}
+	diagram.Config = config
+	sketch := true
+	out, err := d2svg.Render(diagram, &d2svg.RenderOpts{
+		ThemeID: &themeID,
+		Sketch:  &sketch,
+	})
+	if err != nil {
+		return err
+	}
+	if err = os.WriteFile(path, out, 0600); err != nil {
+		return err
+	}
+	return nil
 }
 
 func GenFSM[Data DataEntity](name string, initial State[Data]) FSM[Data] {
