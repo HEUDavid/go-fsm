@@ -38,8 +38,8 @@ func (t *Task[Data]) GetData() *Data {
 	return &t.Data
 }
 
-func (t *Task[Data]) SetData(Data Data) {
-	t.Data = Data
+func (t *Task[Data]) SetData(data Data) {
+	t.Data = data
 }
 
 func (t *Task[Data]) SetTaskID(taskID string) {
