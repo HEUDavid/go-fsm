@@ -21,10 +21,9 @@ type Factory struct {
 }
 
 func (f *Factory) InitMQ(config util.Config) error {
-	conn, err := amqp.Dial(fmt.Sprintf(
-		"amqp://%s:%s@%s:%d/",
-		config["user"], config["password"], config["host"], config["port"],
-	))
+	url := fmt.Sprintf("amqp://%s:%s@%s:%d/", config["user"], config["password"], config["host"], config["port"])
+
+	conn, err := amqp.Dial(url)
 	if err != nil {
 		return err
 	}
@@ -93,5 +92,4 @@ func (f *Factory) Start() {
 	for d := range deliveries {
 		f.buffer <- Message{c: context.Background(), delivery: &d}
 	}
-
 }
