@@ -43,7 +43,7 @@ func (w *Worker[Data]) Run() {
 }
 
 func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
-	log.Printf("HandleMessage: %s", msg)
+	log.Printf("[FSM] HandleMessage: %s", msg)
 
 	taskID := msg
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
