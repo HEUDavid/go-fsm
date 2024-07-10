@@ -8,27 +8,27 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-type IBase[ExtData ExtDataEntity] interface {
-	RegisterModel(extDataModel, taskModel, uniqueRequestModel schema.Tabler)
+type IBase[Data DataEntity] interface {
+	RegisterModel(DataModel, taskModel, uniqueRequestModel schema.Tabler)
 	RegisterDB(db db.IDB)
 	RegisterMQ(mq mq.IMQ)
-	RegisterFSM(fsm FSM[ExtData])
+	RegisterFSM(fsm FSM[Data])
 }
 
-type Base[ExtData ExtDataEntity] struct {
+type Base[Data DataEntity] struct {
 	Config *util.Config
 	Models
 	db.IDB
 	mq.IMQ
-	FSM[ExtData]
+	FSM[Data]
 }
 
-func (b *Base[ExtData]) RegisterModel(extDataModel, taskModel, uniqueRequestModel schema.Tabler) {
-	if !(extDataModel != nil && taskModel != nil && uniqueRequestModel != nil) {
-		panic("[FSM] Model ext_data、task、unique_request should not be nil")
+func (b *Base[Data]) RegisterModel(dataModel, taskModel, uniqueRequestModel schema.Tabler) {
+	if !(dataModel != nil && taskModel != nil && uniqueRequestModel != nil) {
+		panic("[FSM] Model data、task、unique_request should not be nil")
 	}
-	if !util.HasAttr(extDataModel, "TaskID") {
-		panic("[FSM] Model ext_data error")
+	if !util.HasAttr(dataModel, "TaskID") {
+		panic("[FSM] Model data error")
 	}
 	if !(util.HasAttr(taskModel, "RequestID") && util.HasAttr(taskModel, "State")) {
 		panic("[FSM] Model task error")
@@ -36,19 +36,19 @@ func (b *Base[ExtData]) RegisterModel(extDataModel, taskModel, uniqueRequestMode
 	if !(util.HasAttr(uniqueRequestModel, "RequestID") && util.HasAttr(uniqueRequestModel, "TaskID")) {
 		panic("[FSM] Model unique_request error")
 	}
-	b.ExtDataModel = extDataModel
+	b.DataModel = dataModel
 	b.TaskModel = taskModel
 	b.UniqueRequestModel = uniqueRequestModel
 }
 
-func (b *Base[ExtData]) RegisterDB(db db.IDB) {
+func (b *Base[Data]) RegisterDB(db db.IDB) {
 	b.IDB = db
 }
 
-func (b *Base[ExtData]) RegisterMQ(mq mq.IMQ) {
+func (b *Base[Data]) RegisterMQ(mq mq.IMQ) {
 	b.IMQ = mq
 }
 
-func (b *Base[ExtData]) RegisterFSM(fsm FSM[ExtData]) {
+func (b *Base[Data]) RegisterFSM(fsm FSM[Data]) {
 	b.FSM = fsm
 }
