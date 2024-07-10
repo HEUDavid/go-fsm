@@ -13,7 +13,7 @@ func TestFSM_Draw(t *testing.T) {
 		Frozen   = State[*testData]{Name: "Frozen"}
 		Audit    = State[*testData]{Name: "Audit"}
 		Approved = State[*testData]{Name: "Approved"}
-		Rejected = State[*testData]{Name: "Rejected"}
+		Rejected = State[*testData]{Name: "Rejected", IsFinal: true}
 		Pay      = State[*testData]{Name: "Pay"}
 		PaySucc  = State[*testData]{Name: "PaySucc", IsFinal: true}
 		PayFail  = State[*testData]{Name: "PayFail", IsFinal: true}
