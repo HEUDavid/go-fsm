@@ -32,8 +32,9 @@ func AddUnique[Data DataEntity](tx *gorm.DB, m Models, task *Task[Data], needMod
 
 	mysqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
-		return false, err
+		return false, fmt.Errorf("assert MySQLError: %v", mysqlErr)
 	}
+
 	switch mysqlErr.Number {
 	case 1062:
 		if needModifyTaskID { // Use the TaskID recorded in the DB to assign values, making the interface idempotent.
