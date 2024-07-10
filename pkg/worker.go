@@ -5,19 +5,23 @@ import (
 	"github.com/HEUDavid/go-fsm/internal"
 	. "github.com/HEUDavid/go-fsm/pkg/metadata"
 	"github.com/HEUDavid/go-fsm/pkg/util"
+	"log"
 )
 
-type IWorker[ExtData ExtDataEntity] interface {
+type IWorker[Data DataEntity] interface {
 	Init()
 	Run()
-	HandleMsg(c context.Context, msg string) error
+	HandleMessage(c context.Context, msg string) error
 }
 
-type Worker[ExtData ExtDataEntity] struct {
-	internal.Base[ExtData]
+type Worker[Data DataEntity] struct {
+	internal.Base[Data]
+	ReInit          func()
+	ReRun           func()
+	ReHandleMessage func(c context.Context, msg string) error
 }
 
-func (w *Worker[ExtData]) Init() {
+func (w *Worker[Data]) Init() {
 	if err := w.InitDB((*w.Config)["mysql"].(util.Config)); err != nil {
 		panic(err)
 	}
@@ -29,11 +33,11 @@ func (w *Worker[ExtData]) Init() {
 
 }
 
-func (w *Worker[ExtData]) Run() {
+func (w *Worker[Data]) Run() {
 	go func() {
 		for {
 			c, msg, ack := w.FetchMessage(context.Background())
-			err := w.HandleMsg(c, msg)
+			err := w.HandleMessage(c, msg)
 			if err == nil && ack != nil {
 				_ = ack()
 			}
@@ -41,10 +45,11 @@ func (w *Worker[ExtData]) Run() {
 	}()
 }
 
-func (w *Worker[ExtData]) HandleMsg(c context.Context, msg string) error {
+func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
+	log.Printf("HandleMessage: %s", msg)
 
 	taskID := msg
-	state, err := internal.QueryTaskState(c, w.GetDB(), w.TaskModel, taskID)
+	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
 	if err != nil {
 		return err
 	}
@@ -57,10 +62,10 @@ func (w *Worker[ExtData]) HandleMsg(c context.Context, msg string) error {
 		return nil
 	}
 
-	extData, _ := util.Assert[ExtData](util.ReflectNew(w.ExtDataModel))
-	task := GenTaskInstance("", taskID, extData)
+	data, _ := util.Assert[Data](util.ReflectNew(w.DataModel))
+	task := GenTaskInstance("", taskID, data)
 
-	if err = internal.QueryTaskTx(c, w.GetDB(), w.TaskModel, w.ExtDataModel, task); err != nil {
+	if err = internal.QueryTaskTx(c, w.GetDB(), w.Models, task); err != nil {
 		return err
 	}
 
