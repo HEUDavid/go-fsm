@@ -1,7 +1,5 @@
-<div style="text-align: center;">
-<h1>go-fsm</h1>
-<h4>The Finite State Machine Development Framework Implemented in Go</h4>
-</div>
+<h1 align="center">go-fsm</h1>
+<p align="center">The Finite State Machine Development Framework Implemented in Go</p>
 
 ## 简介
 
