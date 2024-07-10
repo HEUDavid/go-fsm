@@ -1,15 +1,13 @@
 <div style="text-align: center;">
-
-# go-fsm
-The Finite State Machine Development Framework Implemented in Go
-
+<h1>go-fsm</h1>
+<h4>The Finite State Machine Development Framework Implemented in Go</h4>
 </div>
 
 ## 简介
 
 go-fsm 是一个分布式状态机开发框架，核心是自动化的状态流转，能帮助开发者更简单地开发出需要完成分布式事务的应用。
 
-本项目主打`安全可靠`，是一些金融业务的成功实践。
+本项目`安全可靠`，是一些金融业务的成功实践。
 
 ## 快速开始
 
@@ -27,59 +25,61 @@ require (
 
 ```go
 func newHandler(task *Task[*MyData]) error {
-log.Printf("[FSM] State: %s, Task.Data: %s", task.State, _pretty(task.GetData()))
+	log.Printf("[FSM] State: %s, Task.Data: %s", task.State, _pretty(task.GetData()))
 
-// It may be necessary to perform some checks.
-// It may be necessary to pre-record the request to the database to ensure idempotency.
-// For example, generating some request IDs.
-// ...
+	// It may be necessary to perform some checks.
+	// It may be necessary to pre-record the request to the database to ensure idempotency.
+	// For example, generating some request IDs.
+	// ...
 
-task.Data.Comment = "Modified by newHandler" // Update Data
-task.State = Pay.GetName() // Switch to next state
-return nil
+	task.Data.Comment = "Modified by newHandler" // Update Data
+	task.State = Pay.GetName()                   // Switch to next state
+	return nil
 }
+
 ```
 
 一个最简单的支付流程：New -> Pay -> End
 
 ```go
 var (
-New = GenState("New", false, newHandler)
-Pay = GenState("Pay", false, payHandler)
-End = State[*MyData]{Name: "End", IsFinal: true, Handler: nil}
+	New = GenState("New", false, newHandler)
+	Pay = GenState("Pay", false, payHandler)
+	End = State[*MyData]{Name: "End", IsFinal: true, Handler: nil}
 )
 
 var (
-New2Pay = GenTransition(New, Pay)
-Pay2End = GenTransition(Pay, End)
-End2End = GenTransition(End, End)
+	New2Pay = GenTransition(New, Pay)
+	Pay2End = GenTransition(Pay, End)
+	End2End = GenTransition(End, End)
 )
 
-var PayFSM = func () FSM[*MyData] {
-fsm := GenFSM("PayFSM", New)
-fsm.RegisterState(New, Pay, End)
-fsm.RegisterTransition(New2Pay, Pay2End, End2End)
-return fsm
+var PayFSM = func() FSM[*MyData] {
+	fsm := GenFSM("PayFSM", New)
+	fsm.RegisterState(New, Pay, End)
+	fsm.RegisterTransition(New2Pay, Pay2End, End2End)
+	return fsm
 }()
 ```
 
 通过代码可得到其状态机图
 
 ```go
-err := PayFSM.Draw("pay.svg")
+_ = PayFSM.Draw("pay.svg")
 ```
 
-<img src="./docs/assets/pay.svg"  alt="PayFSM"/>
+<img src="./docs/assets/pay.svg"  alt="PayFSM" width="500"/>
 
 另一个[稍微复杂的示例](https://github.com/HEUDavid/go-fsm/blob/main/pkg/metadata/view_test.go#L10)
-<img src="./docs/assets/audits.svg"  alt="AuditsFSM"/>
+
+<img src="./docs/assets/audits.svg"  alt="AuditsFSM" width="500"/>
 
 ## 框架结构
 
 - **Adapter**: 接受外部调用(对服务接口协议没有要求)，核心数据读写，接口满足幂等性
 - **Worker**：基于MQ消息驱动，状态处理器，Worker调用安全可重入
 
-<img src="./docs/assets/arch.png"  alt="arch"/>
+<img src="./docs/assets/arch.png"  alt="arch" width="600"/>
 
 ## 主要能力
 
