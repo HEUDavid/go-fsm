@@ -8,40 +8,40 @@ import (
 	"github.com/HEUDavid/go-fsm/pkg/util"
 )
 
-type IAdapter[ExtData ExtDataEntity] interface {
+type IAdapter[Data DataEntity] interface {
 	Init() error
 
-	BeforeCreate(c context.Context, task *Task[ExtData]) error
-	CreateCheck(c context.Context, task *Task[ExtData]) error
-	Create(c context.Context, task *Task[ExtData]) error
+	BeforeCreate(c context.Context, task *Task[Data]) error
+	CreateCheck(c context.Context, task *Task[Data]) error
+	Create(c context.Context, task *Task[Data]) error
 
-	BeforeQuery(c context.Context, task *Task[ExtData]) error
-	QueryCheck(c context.Context, task *Task[ExtData]) error
-	Query(c context.Context, task *Task[ExtData]) error
+	BeforeQuery(c context.Context, task *Task[Data]) error
+	QueryCheck(c context.Context, task *Task[Data]) error
+	Query(c context.Context, task *Task[Data]) error
 
-	BeforeUpdate(c context.Context, task *Task[ExtData]) error
-	UpdateCheck(c context.Context, task *Task[ExtData]) error
-	Update(c context.Context, task *Task[ExtData]) error
+	BeforeUpdate(c context.Context, task *Task[Data]) error
+	UpdateCheck(c context.Context, task *Task[Data]) error
+	Update(c context.Context, task *Task[Data]) error
 
-	Publish(c context.Context, task *Task[ExtData]) error
+	Publish(c context.Context, task *Task[Data]) error
 }
 
-type Adapter[ExtData ExtDataEntity] struct {
-	internal.Base[ExtData]
+type Adapter[Data DataEntity] struct {
+	internal.Base[Data]
 	ReInit         func() error
-	ReBeforeCreate func(c context.Context, task *Task[ExtData]) error
-	ReCreateCheck  func(c context.Context, task *Task[ExtData]) error
-	ReCreate       func(c context.Context, task *Task[ExtData]) error
-	ReBeforeQuery  func(c context.Context, task *Task[ExtData]) error
-	ReQueryCheck   func(c context.Context, task *Task[ExtData]) error
-	ReQuery        func(c context.Context, task *Task[ExtData]) error
-	ReBeforeUpdate func(c context.Context, task *Task[ExtData]) error
-	ReUpdateCheck  func(c context.Context, task *Task[ExtData]) error
-	ReUpdate       func(c context.Context, task *Task[ExtData]) error
-	RePublish      func(c context.Context, task *Task[ExtData]) error
+	ReBeforeCreate func(c context.Context, task *Task[Data]) error
+	ReCreateCheck  func(c context.Context, task *Task[Data]) error
+	ReCreate       func(c context.Context, task *Task[Data]) error
+	ReBeforeQuery  func(c context.Context, task *Task[Data]) error
+	ReQueryCheck   func(c context.Context, task *Task[Data]) error
+	ReQuery        func(c context.Context, task *Task[Data]) error
+	ReBeforeUpdate func(c context.Context, task *Task[Data]) error
+	ReUpdateCheck  func(c context.Context, task *Task[Data]) error
+	ReUpdate       func(c context.Context, task *Task[Data]) error
+	RePublish      func(c context.Context, task *Task[Data]) error
 }
 
-func (a *Adapter[ExtData]) Init() error {
+func (a *Adapter[Data]) Init() error {
 	if a.ReInit != nil {
 		return a.ReInit()
 	}
@@ -59,7 +59,7 @@ func (a *Adapter[ExtData]) Init() error {
 	return nil
 }
 
-func (a *Adapter[ExtData]) BeforeCreate(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) BeforeCreate(c context.Context, task *Task[Data]) error {
 	if a.ReBeforeCreate != nil {
 		return a.ReBeforeCreate(c, task)
 	}
@@ -68,7 +68,7 @@ func (a *Adapter[ExtData]) BeforeCreate(c context.Context, task *Task[ExtData]) 
 	return nil
 }
 
-func (a *Adapter[ExtData]) CreateCheck(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) CreateCheck(c context.Context, task *Task[Data]) error {
 	if a.ReCreateCheck != nil {
 		return a.ReCreateCheck(c, task)
 	}
@@ -82,7 +82,7 @@ func (a *Adapter[ExtData]) CreateCheck(c context.Context, task *Task[ExtData]) e
 	return nil
 }
 
-func (a *Adapter[ExtData]) Create(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) Create(c context.Context, task *Task[Data]) error {
 	if a.ReCreate != nil {
 		return a.ReCreate(c, task)
 	}
@@ -108,7 +108,7 @@ func (a *Adapter[ExtData]) Create(c context.Context, task *Task[ExtData]) error 
 	return nil
 }
 
-func (a *Adapter[ExtData]) BeforeQuery(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) BeforeQuery(c context.Context, task *Task[Data]) error {
 	if a.ReBeforeQuery != nil {
 		return a.ReBeforeQuery(c, task)
 	}
@@ -116,7 +116,7 @@ func (a *Adapter[ExtData]) BeforeQuery(c context.Context, task *Task[ExtData]) e
 	return nil
 }
 
-func (a *Adapter[ExtData]) QueryCheck(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) QueryCheck(c context.Context, task *Task[Data]) error {
 	if a.ReQueryCheck != nil {
 		return a.ReQueryCheck(c, task)
 	}
@@ -127,7 +127,7 @@ func (a *Adapter[ExtData]) QueryCheck(c context.Context, task *Task[ExtData]) er
 	return nil
 }
 
-func (a *Adapter[ExtData]) Query(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) Query(c context.Context, task *Task[Data]) error {
 	if a.ReQuery != nil {
 		return a.ReQuery(c, task)
 	}
@@ -139,14 +139,14 @@ func (a *Adapter[ExtData]) Query(c context.Context, task *Task[ExtData]) error {
 		return err
 	}
 
-	if err := internal.QueryTaskTx(c, a.GetDB(), a.TaskModel, a.ExtDataModel, task); err != nil {
+	if err := internal.QueryTaskTx(c, a.GetDB(), a.Models, task); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (a *Adapter[ExtData]) BeforeUpdate(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) BeforeUpdate(c context.Context, task *Task[Data]) error {
 	if a.ReBeforeUpdate != nil {
 		return a.ReBeforeUpdate(c, task)
 	}
@@ -154,7 +154,7 @@ func (a *Adapter[ExtData]) BeforeUpdate(c context.Context, task *Task[ExtData]) 
 	return nil
 }
 
-func (a *Adapter[ExtData]) UpdateCheck(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) UpdateCheck(c context.Context, task *Task[Data]) error {
 	if a.ReUpdateCheck != nil {
 		return a.ReUpdateCheck(c, task)
 	}
@@ -171,7 +171,7 @@ func (a *Adapter[ExtData]) UpdateCheck(c context.Context, task *Task[ExtData]) e
 	return nil
 }
 
-func (a *Adapter[ExtData]) Update(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) Update(c context.Context, task *Task[Data]) error {
 	if a.ReUpdate != nil {
 		return a.ReUpdate(c, task)
 	}
@@ -194,7 +194,7 @@ func (a *Adapter[ExtData]) Update(c context.Context, task *Task[ExtData]) error 
 	return nil
 }
 
-func (a *Adapter[ExtData]) Publish(c context.Context, task *Task[ExtData]) error {
+func (a *Adapter[Data]) Publish(c context.Context, task *Task[Data]) error {
 	if a.RePublish != nil {
 		return a.RePublish(c, task)
 	}
