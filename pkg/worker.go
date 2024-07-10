@@ -16,9 +16,6 @@ type IWorker[Data DataEntity] interface {
 
 type Worker[Data DataEntity] struct {
 	internal.Base[Data]
-	ReInit          func()
-	ReRun           func()
-	ReHandleMessage func(c context.Context, msg string) error
 }
 
 func (w *Worker[Data]) Init() {
