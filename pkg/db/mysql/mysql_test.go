@@ -6,8 +6,8 @@ import (
 )
 
 func TestInitDB(t *testing.T) {
-	config := (*util.GetConfig())["mysql"].(util.Config)
-	factory := &Factory{}
+	factory := &Factory{DBSection: "mysql_aws_tokyo"}
+	config := (*util.GetConfig())[factory.GetDBSection()].(util.Config)
 	if err := factory.InitDB(config); err != nil {
 		t.Error(err)
 	}
