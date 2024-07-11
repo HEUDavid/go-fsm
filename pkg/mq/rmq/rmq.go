@@ -14,15 +14,15 @@ type Message struct {
 }
 
 type Factory struct {
-	MQSection string
-	buffer    chan Message
-	conn      *amqp.Connection
-	ch        *amqp.Channel
-	q         amqp.Queue
+	Section string
+	buffer  chan Message
+	conn    *amqp.Connection
+	ch      *amqp.Channel
+	q       amqp.Queue
 }
 
 func (f *Factory) GetMQSection() string {
-	return f.MQSection
+	return f.Section
 }
 
 func (f *Factory) InitMQ(config util.Config) error {

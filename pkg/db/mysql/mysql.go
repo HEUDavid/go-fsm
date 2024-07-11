@@ -13,14 +13,14 @@ import (
 )
 
 type Factory struct {
-	DB        *gorm.DB
-	DBSection string
-	config    util.Config
-	url       string
+	DB      *gorm.DB
+	Section string
+	config  util.Config
+	url     string
 }
 
 func (f *Factory) GetDBSection() string {
-	return f.DBSection
+	return f.Section
 }
 
 func (f *Factory) makeURL(net string) {
