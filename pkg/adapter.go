@@ -46,12 +46,12 @@ func (a *Adapter[Data]) Init() error {
 		return a.ReInit()
 	}
 
-	if err := a.InitDB((*a.Config)["mysql"].(util.Config)); err != nil {
+	if err := a.InitDB((*a.Config)[a.DBSection].(util.Config)); err != nil {
 		return err
 	}
 
 	if a.IMQ != nil {
-		if err := a.InitMQ((*a.Config)["rmq"].(util.Config)); err != nil {
+		if err := a.InitMQ((*a.Config)[a.MQSection].(util.Config)); err != nil {
 			return err
 		}
 	}
