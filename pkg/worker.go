@@ -19,11 +19,11 @@ type Worker[Data DataEntity] struct {
 }
 
 func (w *Worker[Data]) Init() {
-	if err := w.InitDB((*w.Config)[w.DBSection].(util.Config)); err != nil {
+	if err := w.InitDB((*w.Config)[w.GetDBSection()].(util.Config)); err != nil {
 		panic(err)
 	}
 
-	if err := w.InitMQ((*w.Config)[w.MQSection].(util.Config)); err != nil {
+	if err := w.InitMQ((*w.Config)[w.GetMQSection()].(util.Config)); err != nil {
 		panic(err)
 	}
 	go w.Start()

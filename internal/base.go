@@ -10,17 +10,15 @@ import (
 
 type IBase[Data DataEntity] interface {
 	RegisterModel(DataModel, taskModel, uniqueRequestModel schema.Tabler)
-	RegisterDB(section string, db db.IDB)
-	RegisterMQ(section string, mq mq.IMQ)
+	RegisterDB(db db.IDB)
+	RegisterMQ(mq mq.IMQ)
 	RegisterFSM(fsm FSM[Data])
 }
 
 type Base[Data DataEntity] struct {
 	Config *util.Config
 	Models
-	DBSection string
 	db.IDB
-	MQSection string
 	mq.IMQ
 	FSM[Data]
 }
@@ -43,13 +41,11 @@ func (b *Base[Data]) RegisterModel(dataModel, taskModel, uniqueRequestModel sche
 	b.UniqueRequestModel = uniqueRequestModel
 }
 
-func (b *Base[Data]) RegisterDB(section string, db db.IDB) {
-	b.DBSection = section
+func (b *Base[Data]) RegisterDB(db db.IDB) {
 	b.IDB = db
 }
 
-func (b *Base[Data]) RegisterMQ(section string, mq mq.IMQ) {
-	b.MQSection = section
+func (b *Base[Data]) RegisterMQ(mq mq.IMQ) {
 	b.IMQ = mq
 }
 
