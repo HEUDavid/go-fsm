@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	config := (*util.GetConfig())["rmq"].(util.Config)
+	mq := rmq.Factory{Section: "rmq_cloud"}
 
-	mq := rmq.Factory{}
+	config := (*util.GetConfig())[mq.GetMQSection()].(util.Config)
 	if err := mq.InitMQ(config); err != nil {
 		panic(err)
 	}
