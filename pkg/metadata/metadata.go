@@ -22,10 +22,10 @@ type DataEntity interface {
 // Task is the main table, maintaining state, driven execution
 type Task[Data DataEntity] struct {
 	ID         string    `gorm:"primaryKey;column:id;type:char(32);not null"`
-	RequestID  string    `gorm:"unique;column:request_id;type:char(32);not null;comment:'初始请求ID'"`
-	Type       string    `gorm:"column:type;type:varchar(128);not null;comment:'业务类型'"`
-	State      string    `gorm:"column:state;type:varchar(128);not null;comment:'任务状态'"`
-	Version    int       `gorm:"column:version;type:int(11);not null;default:1"`
+	RequestID  string    `gorm:"unique;column:request_id;type:char(32);not null;comment:'初始请求ID'"`       // 初始请求ID
+	Type       string    `gorm:"column:type;type:varchar(128);not null;comment:'业务类型'"`                  // 业务类型
+	State      string    `gorm:"index:idx_state;column:state;type:varchar(128);not null;comment:'任务状态'"` // 任务状态
+	Version    uint32    `gorm:"column:version;type:int(10) unsigned;not null;default:1"`
 	CreateTime time.Time `gorm:"column:create_time;type:timestamp;not null;default:current_timestamp()"`
 	UpdateTime time.Time `gorm:"column:update_time;type:timestamp;not null;default:current_timestamp()"`
 
