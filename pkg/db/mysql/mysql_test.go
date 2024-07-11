@@ -6,7 +6,7 @@ import (
 )
 
 func TestInitDB(t *testing.T) {
-	config := (*util.GetConfig())["mysql"].(util.Config)
+	config := (*util.GetConfig())["mysql_aiven"].(util.Config)
 	factory := &Factory{}
 	if err := factory.InitDB(config); err != nil {
 		t.Error(err)
