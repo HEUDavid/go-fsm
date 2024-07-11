@@ -21,7 +21,10 @@ type Factory struct {
 }
 
 func (f *Factory) InitMQ(config util.Config) error {
-	url := fmt.Sprintf("amqp://%s:%s@%s:%d/", config["user"], config["password"], config["host"], config["port"])
+	url := fmt.Sprintf(
+		"amqp://%s:%s@%s:%d%s",
+		config["user"], config["password"], config["host"], config["port"], config["vhost"],
+	)
 
 	conn, err := amqp.Dial(url)
 	if err != nil {
