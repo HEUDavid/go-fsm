@@ -38,7 +38,7 @@ func newHandler(task *Task[*MyData]) error {
 
 A simple payment flow: New -> Pay -> End, defined as follows
 
-(Note: Full Demo project [link](https://github.com/HEUDavid/go-fsm-demo))
+(Note: Full Demo project [here](https://github.com/HEUDavid/go-fsm-demo))
 
 ```go
 var (
@@ -61,7 +61,7 @@ var PayFSM = func() FSM[*MyData] {
 }()
 ```
 
-Generate the state machine diagram (left) via code, another slightly [more complex example (right)](https://github.com/HEUDavid/go-fsm/blob/main/pkg/metadata/view_test.go#L10)
+Generate the state machine diagram (left) via code. Another slightly [more complex example (right)](https://github.com/HEUDavid/go-fsm/blob/main/pkg/metadata/view_test.go#L10)
 
 
 ```go
@@ -85,21 +85,21 @@ _ = PayFSM.Draw("pay.svg")
 ## Main Capabilities
 
 - **Describing State Machines**:
-  - Easily describe state machine nodes and edges (state transitions), and draw state machines
+  - Easily describe the state machine nodes and edges (state transitions). Easily draw the state machines diagram
   - State handlers: Developers only need to implement specific business logic, the framework handles message distribution, scheduling, etc.
 - **Middleware Support**:
   - Data storage: MySQL, supports transactions, can be easily embedded into other businesses
   - MQ middleware: RabbitMQ, Amazon Simple Queue Service
   - Other types of middleware can be extended according to the interface
-- **Generic Support:**:
-  - `Excellent support for Golang generics!!!` Developing business code is very simple, the structure is clear! Rewriting logic is also very simple!
-- **Data Update Logs**: Soon
+- **Generic Support**:
+  - `Excellent support for Golang generics!!!` Developing business code is particularly simple and clear! Rewriting logic is also very simple!
+- **Data Update Logs**: Soon...
 
 ## Main Features
 
 - **High Concurrency**: Supports horizontal scaling
-- **Strong Reliability**: Satisfies principles of idempotency, consistency, atomicity, reentrancy, etc.
-- **Flexible Expansion**: Flexibly expand according to interfaces, free rewriting, arbitrary logic, arbitrary components
+- **Strong Reliability**: Satisfies principles of idempotency, consistency, atomicity, reentrancy
+- **Flexible Expansion**: Flexibly extendable by implementing interfaces, freely rewrite, arbitrary logic, arbitrary components
 
 ## Applicable Scenarios
 
@@ -112,18 +112,18 @@ _ = PayFSM.Draw("pay.svg")
 
 - **Interface Idempotency**:
   - Create: request_id unique key ensures its idempotency
-  - Update: request_id unique key ensures its idempotency, and version control (optimistic locking, at the DB level so performance is very good)
+  - Update: request_id unique key ensures its idempotency, and version control (optimistic lock, at the DB level so performance is very good)
 - **Reliability of State Transitions**:
   - Interface and Worker transition states, first get the current state, judge whether the action is in the pre-defined state transition table
-  - Updates are based on version numbers
+  - Updates are based on version
 - **Reentrancy of State Handlers**:
   - Ensure idempotency when developers call other external interfaces, then the system is reentrant (safe calling)
-- **Will Messages Be Lost (Using the Framework's MQ Component)?**:
+- **Messages Be Lost (Using the Framework's MQ Component)?**:
   - When the state handler returns an error, ACK will not be executed, waiting for the MQ server to redistribute to the queue, automatic retry
   - RMQ cluster is reliable, but even if messages are lost, it's okay. Messages are stateless, you can use script tools for operational resend or implement monitoring logic for resend (one practice is to detect state stays)
-  - AWS Amazon Simple Queue Service, more reliable
+  - AWS Amazon Simple Queue Service, more reliable...
 
 
 ## Contact Me
 
-admin@mdavid.cn
+#### admin@mdavid.cn
