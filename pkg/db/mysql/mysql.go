@@ -60,7 +60,6 @@ func (f *Factory) InitDB(config util.Config) error {
 		return err
 	}
 
-	// fmt.Println(f.url)
 	db, err := gorm.Open(gormDriver.Open(f.url), &gorm.Config{})
 	if err != nil {
 		return fmt.Errorf("error opening database: %w", err)
