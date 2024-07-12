@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"time"
 )
@@ -32,6 +33,7 @@ type Task[Data DataEntity] struct {
 	Data          Data     `gorm:"-"` // Data: Customized Data Tables
 	SelectColumns []string `gorm:"-"` // Data: Columns to update, including zero values
 	OmitColumns   []string `gorm:"-"` // Data: Columns to be ignored
+	WithDB        *gorm.DB `gorm:"-"`
 }
 
 func (t *Task[Data]) GetData() *Data {
