@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"context"
+	. "context"
 	"fmt"
 	. "github.com/HEUDavid/go-fsm/pkg/metadata"
 	"github.com/HEUDavid/go-fsm/pkg/util"
@@ -9,14 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddTaskFlow[Data DataEntity](tx *gorm.DB, m Models, task *Task[Data], queryFirst bool) error {
+func AddTaskFlow[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], queryFirst bool) error {
 	if m.TaskFlowModel == nil || m.DataModel == nil {
 		return nil
 	}
 	return nil
 }
 
-func AddUnique[Data DataEntity](tx *gorm.DB, m Models, task *Task[Data], needModifyTaskID bool) (bool, error) {
+func AddUnique[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], needModifyTaskID bool) (bool, error) {
 	uniqueReq := struct {
 		RequestID string
 		TaskID    string
@@ -48,7 +48,7 @@ func AddUnique[Data DataEntity](tx *gorm.DB, m Models, task *Task[Data], needMod
 	return false, err
 }
 
-func CreateTask[Data DataEntity](c context.Context, m Models, task *Task[Data]) error {
+func CreateTask[Data DataEntity](c Context, m Models, task *Task[Data]) error {
 	db := task.WithDB
 	if err := db.Transaction(func(tx *gorm.DB) error { return _createTask(c, tx, m, task) }); err != nil {
 		return err
@@ -56,8 +56,8 @@ func CreateTask[Data DataEntity](c context.Context, m Models, task *Task[Data]) 
 	return nil
 }
 
-func _createTask[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data]) error {
-	keyConflict, e := AddUnique(tx, m, task, true)
+func _createTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data]) error {
+	keyConflict, e := AddUnique(c, tx, m, task, true)
 	if e != nil {
 		return e
 	}
@@ -72,14 +72,14 @@ func _createTask[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task
 		return e
 	}
 
-	if e = AddTaskFlow(tx, m, task, false); e != nil {
+	if e = AddTaskFlow(c, tx, m, task, false); e != nil {
 		return e
 	}
 
 	return nil
 }
 
-func QueryTask[Data DataEntity](c context.Context, m Models, task *Task[Data]) error {
+func QueryTask[Data DataEntity](c Context, m Models, task *Task[Data]) error {
 	db := task.WithDB
 
 	_queryTask := func(_tx *gorm.DB) *gorm.DB {
@@ -104,7 +104,7 @@ func QueryTask[Data DataEntity](c context.Context, m Models, task *Task[Data]) e
 	return nil
 }
 
-func QueryTaskState(c context.Context, db *gorm.DB, m Models, taskID string) (*string, error) {
+func QueryTaskState(c Context, db *gorm.DB, m Models, taskID string) (*string, error) {
 	var state string
 	if err := db.Table(m.TaskModel.TableName()).Select("state").Where("id = ?", taskID).Scan(&state).Error; err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func QueryTaskState(c context.Context, db *gorm.DB, m Models, taskID string) (*s
 	return &state, nil
 }
 
-func UpdateTask[Data DataEntity](c context.Context, m Models, task *Task[Data], fsm FSM[Data]) error {
+func UpdateTask[Data DataEntity](c Context, m Models, task *Task[Data], fsm FSM[Data]) error {
 	db := task.WithDB
 	if err := db.Transaction(func(tx *gorm.DB) error { return _updateTask(c, tx, m, task, fsm) }); err != nil {
 		return err
@@ -120,8 +120,8 @@ func UpdateTask[Data DataEntity](c context.Context, m Models, task *Task[Data], 
 	return nil
 }
 
-func _updateTask[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data], fsm FSM[Data]) error {
-	keyConflict, e := AddUnique(tx, m, task, false)
+func _updateTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], fsm FSM[Data]) error {
+	keyConflict, e := AddUnique(c, tx, m, task, false)
 	if e != nil {
 		return e
 	}
@@ -156,14 +156,14 @@ func _updateTask[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task
 		return e
 	}
 
-	if e = AddTaskFlow(tx, m, task, true); e != nil {
+	if e = AddTaskFlow(c, tx, m, task, true); e != nil {
 		return e
 	}
 
 	return nil
 }
 
-func UpdateData[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data]) error {
+func UpdateData[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data]) error {
 	_query := func(_tx *gorm.DB) *gorm.DB {
 		return _tx.Table(m.DataModel.TableName()).Where("task_id = ?", task.ID)
 	}
