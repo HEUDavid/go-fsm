@@ -64,10 +64,19 @@ func (w *Worker[Data]) Run() {
 	}()
 }
 
-func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) error {
+func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err error) {
 	if w.ReHandle != nil {
 		return w.ReHandle(c, msg, ack)
 	}
+
+	defer func() {
+		log.Printf("[FSM] Handle msg %s, %v", msg, err)
+		if err != nil {
+			return
+		}
+		err = ack()
+		log.Printf("[FSM] ACK %s, %v", msg, err)
+	}()
 
 	log.Printf("[FSM] Start Handle: %s", msg)
 
@@ -105,14 +114,6 @@ func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) error {
 	if err = w.PublishMessage(c, taskID); err != nil {
 		return err
 	}
-
-	if ack == nil {
-		return nil
-	}
-	if err = ack(); err != nil {
-		return err
-	}
-	log.Printf("[FSM] ACK: %s", msg)
 
 	return nil
 }
