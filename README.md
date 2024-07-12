@@ -102,7 +102,7 @@ _ = PayFSM.Draw("pay.svg")
 
 - **High Concurrency**: Supports horizontal scaling
 - **Strong Reliability**: Satisfies principles of idempotency, consistency, atomicity, reentrancy
-- **Flexible Expansion**: Flexibly extendable by implementing interfaces, freely rewrite, arbitrary logic, arbitrary components
+- **Flexible Extension**: Flexibly extendable by implementing interfaces, freely rewrite, arbitrary logic, arbitrary components
 
 ## Applicable Scenarios
 
@@ -113,20 +113,21 @@ _ = PayFSM.Draw("pay.svg")
 
 ## Reliability Statement
 
-- **Interface Idempotency**:
+- **Idempotency of Interface**:
   - Create: request_id unique key ensures its idempotency
   - Update: request_id unique key ensures its idempotency, and version control (optimistic lock, at the DB level so performance is very good)
-- **Reliability of State Transitions**:
-  - Interface and Worker transition states, first get the current state, judge whether the action is in the pre-defined state transition table
+- **Reliability of State Transition**:
+  - Interface and Worker's transitions, first get the current state, judge whether the action is in the pre-defined state transition table
   - Updates are based on version
 - **Reentrancy of State Handlers**:
   - Ensure idempotency when developers call other external interfaces, then the system is reentrant (safe calling)
 - **Messages Be Lost (Using the Framework's MQ Component)?**:
   - When the state handler returns an error, ACK will not be executed, waiting for the MQ server to redistribute to the queue, automatic retry
-  - RMQ cluster is reliable, but even if messages are lost, it's okay. Messages are stateless, you can use script tools for operational resend or implement monitoring logic for resend (one practice is to detect state stays)
+  - RMQ cluster is reliable, but even if messages are lost, it's okay. Messages are stateless, you can use script tools for resend or implement monitoring logic for resend (one practice is to detect state stays)
   - AWS Amazon Simple Queue Service, more reliable...
 
 
 ## Contact Me
 
 #### admin@mdavid.cn
+
