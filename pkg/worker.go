@@ -70,12 +70,12 @@ func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err er
 	}
 
 	defer func() {
-		log.Printf("[FSM] Finish handle %s, %v", msg, err)
+		log.Printf("[FSM] Finish handle %s %v", msg, err)
 		if err != nil {
 			return
 		}
 		err = ack()
-		log.Printf("[FSM] ACK %s, %v", msg, err)
+		log.Printf("[FSM] ACK %s %v", msg, err)
 	}()
 	log.Printf("[FSM] Start handle %s", msg)
 
