@@ -28,7 +28,7 @@ func TestFSM_Draw(t *testing.T) {
 		GenTransition(Pay, PaySucc),
 		GenTransition(Pay, PayFail),
 	)
-	if err := fsm.Draw("fsm.svg"); err != nil {
+	if err := fsm.Draw("audits.svg"); err != nil {
 		t.Fatal(err)
 	}
 }
