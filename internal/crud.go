@@ -48,14 +48,15 @@ func AddUnique[Data DataEntity](tx *gorm.DB, m Models, task *Task[Data], needMod
 	return false, err
 }
 
-func CreateTaskTx[Data DataEntity](c context.Context, db *gorm.DB, m Models, task *Task[Data]) error {
-	if err := db.Transaction(func(tx *gorm.DB) error { return _createTaskTx(c, tx, m, task) }); err != nil {
+func CreateTask[Data DataEntity](c context.Context, m Models, task *Task[Data]) error {
+	db := task.WithDB
+	if err := db.Transaction(func(tx *gorm.DB) error { return _createTask(c, tx, m, task) }); err != nil {
 		return err
 	}
 	return nil
 }
 
-func _createTaskTx[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data]) error {
+func _createTask[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data]) error {
 	keyConflict, e := AddUnique(tx, m, task, true)
 	if e != nil {
 		return e
@@ -78,7 +79,9 @@ func _createTaskTx[Data DataEntity](c context.Context, tx *gorm.DB, m Models, ta
 	return nil
 }
 
-func QueryTaskTx[Data DataEntity](c context.Context, db *gorm.DB, m Models, task *Task[Data]) error {
+func QueryTask[Data DataEntity](c context.Context, m Models, task *Task[Data]) error {
+	db := task.WithDB
+
 	_queryTask := func(_tx *gorm.DB) *gorm.DB {
 		q := _tx.Table(m.TaskModel.TableName())
 		if task.ID != "" {
@@ -91,7 +94,6 @@ func QueryTaskTx[Data DataEntity](c context.Context, db *gorm.DB, m Models, task
 	if err := _queryTask(db).First(task).Error; err != nil {
 		return err
 	}
-
 	_queryData := func(_tx *gorm.DB) *gorm.DB {
 		return _tx.Table(m.DataModel.TableName()).Where("task_id = ?", task.ID)
 	}
@@ -102,22 +104,23 @@ func QueryTaskTx[Data DataEntity](c context.Context, db *gorm.DB, m Models, task
 	return nil
 }
 
-func QueryTaskState(c context.Context, tx *gorm.DB, m Models, taskID string) (*string, error) {
+func QueryTaskState(c context.Context, db *gorm.DB, m Models, taskID string) (*string, error) {
 	var state string
-	if err := tx.Table(m.TaskModel.TableName()).Select("state").Where("id = ?", taskID).Scan(&state).Error; err != nil {
+	if err := db.Table(m.TaskModel.TableName()).Select("state").Where("id = ?", taskID).Scan(&state).Error; err != nil {
 		return nil, err
 	}
 	return &state, nil
 }
 
-func UpdateTaskTx[Data DataEntity](c context.Context, db *gorm.DB, m Models, task *Task[Data], fsm FSM[Data]) error {
-	if err := db.Transaction(func(tx *gorm.DB) error { return _updateTaskTx(c, tx, m, task, fsm) }); err != nil {
+func UpdateTask[Data DataEntity](c context.Context, m Models, task *Task[Data], fsm FSM[Data]) error {
+	db := task.WithDB
+	if err := db.Transaction(func(tx *gorm.DB) error { return _updateTask(c, tx, m, task, fsm) }); err != nil {
 		return err
 	}
 	return nil
 }
 
-func _updateTaskTx[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data], fsm FSM[Data]) error {
+func _updateTask[Data DataEntity](c context.Context, tx *gorm.DB, m Models, task *Task[Data], fsm FSM[Data]) error {
 	keyConflict, e := AddUnique(tx, m, task, false)
 	if e != nil {
 		return e
