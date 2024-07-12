@@ -1,11 +1,11 @@
 package util
 
 import (
-	"fmt"
+	"log"
 	"testing"
 )
 
 func TestGetConfig(t *testing.T) {
 	config := GetConfig()
-	fmt.Printf("Config: %+v\n", config)
+	log.Printf("Config: %+v", config)
 }
