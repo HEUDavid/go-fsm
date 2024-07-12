@@ -70,15 +70,14 @@ func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err er
 	}
 
 	defer func() {
-		log.Printf("[FSM] Handle msg %s, %v", msg, err)
+		log.Printf("[FSM] Finish handle %s, %v", msg, err)
 		if err != nil {
 			return
 		}
 		err = ack()
 		log.Printf("[FSM] ACK %s, %v", msg, err)
 	}()
-
-	log.Printf("[FSM] Start Handle: %s", msg)
+	log.Printf("[FSM] Start handle %s", msg)
 
 	taskID := msg
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
