@@ -62,7 +62,7 @@ func (f *Factory) InitMQ(config util.Config) error {
 	return nil
 }
 
-func (f *Factory) PublishMessage(c context.Context, rawMessage string) error {
+func (f *Factory) PublishMessage(c context.Context, msg string) error {
 	err := f.ch.Publish(
 		"",
 		f.q.Name,
@@ -70,7 +70,7 @@ func (f *Factory) PublishMessage(c context.Context, rawMessage string) error {
 		false,
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(rawMessage),
+			Body:        []byte(msg),
 		})
 	return err
 }
