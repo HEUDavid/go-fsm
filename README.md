@@ -1,6 +1,9 @@
 <h1 align="center">go-fsm</h1>
 <h3 align="center">The Finite State Machine Development Framework Implemented in Go</h3>
 
+
+### [中文版本](https://github.com/HEUDavid/go-fsm/blob/main/README_Chinese.md)
+
 ## Introduction
 
 go-fsm is a distributed state machine development framework. Its core feature is automated state transitions, helping developers more easily create applications that need to complete distributed transactions.
