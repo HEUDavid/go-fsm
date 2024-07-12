@@ -97,7 +97,10 @@ func (a *Adapter[Data]) Create(c context.Context, task *Task[Data]) error {
 	task.SetTaskID(util.GenID())
 	task.State = a.FSM.InitialState.GetName()
 
-	if err := internal.CreateTaskTx(c, a.GetDB(), a.Models, task); err != nil {
+	if task.WithDB == nil {
+		task.WithDB = a.GetDB()
+	}
+	if err := internal.CreateTask(c, a.Models, task); err != nil {
 		return err
 	}
 
@@ -139,7 +142,10 @@ func (a *Adapter[Data]) Query(c context.Context, task *Task[Data]) error {
 		return err
 	}
 
-	if err := internal.QueryTaskTx(c, a.GetDB(), a.Models, task); err != nil {
+	if task.WithDB == nil {
+		task.WithDB = a.GetDB()
+	}
+	if err := internal.QueryTask(c, a.Models, task); err != nil {
 		return err
 	}
 
@@ -183,7 +189,10 @@ func (a *Adapter[Data]) Update(c context.Context, task *Task[Data]) error {
 		return err
 	}
 
-	if err := internal.UpdateTaskTx(c, a.GetDB(), a.Models, task, a.FSM); err != nil {
+	if task.WithDB == nil {
+		task.WithDB = a.GetDB()
+	}
+	if err := internal.UpdateTask(c, a.Models, task, a.FSM); err != nil {
 		return err
 	}
 
