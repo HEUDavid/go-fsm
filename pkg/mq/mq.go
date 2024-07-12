@@ -8,8 +8,8 @@ import (
 type ACK = func() error
 
 type IMQ interface {
-	InitMQ(config util.Config) error
 	GetMQSection() string
+	InitMQ(config util.Config) error
 	PublishMessage(c context.Context, msg string) error
 	FetchMessage(c context.Context) (context.Context, string, ACK)
 	Start()
