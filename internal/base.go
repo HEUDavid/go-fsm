@@ -9,7 +9,7 @@ import (
 )
 
 type IBase[Data DataEntity] interface {
-	RegisterModel(DataModel, taskModel, uniqueRequestModel schema.Tabler)
+	RegisterModel(dataModel, taskModel, uniqueRequestModel schema.Tabler)
 	RegisterDB(db db.IDB)
 	RegisterMQ(mq mq.IMQ)
 	RegisterFSM(fsm FSM[Data])
