@@ -30,10 +30,10 @@ type Task[Data DataEntity] struct {
 	CreateTime time.Time `gorm:"column:create_time;type:timestamp;not null;default:CURRENT_TIMESTAMP"`
 	UpdateTime time.Time `gorm:"column:update_time;type:timestamp;not null;default:CURRENT_TIMESTAMP"`
 
-	Data          Data     `gorm:"-"` // Data: Customized Data Tables
-	SelectColumns []string `gorm:"-"` // Data: Columns to update, including zero values
-	OmitColumns   []string `gorm:"-"` // Data: Columns to be ignored
-	WithDB        *gorm.DB `gorm:"-"`
+	Data          Data     `gorm:"-"`          // Data: Customized Data Tables
+	SelectColumns []string `gorm:"-" json:"-"` // Data: Columns to update, including zero values
+	OmitColumns   []string `gorm:"-" json:"-"` // Data: Columns to be ignored
+	WithDB        *gorm.DB `gorm:"-" json:"-"`
 }
 
 func (t *Task[Data]) GetData() *Data {
