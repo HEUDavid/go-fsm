@@ -78,7 +78,7 @@ func (f *Factory) Start() {
 			WaitTimeSeconds:     aws.Int64(20),
 		})
 		if err != nil {
-			log.Println("Error receiving message:", err)
+			log.Printf("[FSM] Error receiving message: %v", err)
 			continue
 		}
 
@@ -93,7 +93,6 @@ func (f *Factory) Start() {
 					}); err != nil {
 						return fmt.Errorf("error deleting message: %w", err)
 					}
-					log.Println("Successfully deleted message:", *message.Body)
 					return nil
 				},
 			}
