@@ -7,6 +7,7 @@ import (
 	"github.com/HEUDavid/go-fsm/pkg/mq/aws"
 	"github.com/HEUDavid/go-fsm/pkg/mq/rmq"
 	"github.com/HEUDavid/go-fsm/pkg/util"
+	"log"
 	"time"
 )
 
@@ -33,7 +34,7 @@ func main() {
 	go func() {
 		for {
 			_, msg, ack := _mq.FetchMessage(context.TODO())
-			fmt.Println("FetchMessage:", msg)
+			log.Printf("FetchMessage: %s", msg)
 			if ack != nil {
 				_ = ack()
 			}
@@ -44,14 +45,13 @@ func main() {
 		for i := 1; ; i++ {
 			msg := fmt.Sprintf("Hello %d", i)
 			_ = _mq.PublishMessage(context.TODO(), msg)
-			fmt.Println("PublishMessage:", msg)
-
-			time.Sleep(3 * time.Second)
+			log.Printf("PublishMessage: %s", msg)
+			time.Sleep(2 * time.Second)
 		}
 	}()
 
 	forever := make(chan bool)
-	fmt.Println("Exit press CTRL+C...")
+	log.Println("Exit press CTRL+C...")
 	<-forever
 
 }
