@@ -3,24 +3,36 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/HEUDavid/go-fsm/pkg/mq"
+	"github.com/HEUDavid/go-fsm/pkg/mq/aws"
 	"github.com/HEUDavid/go-fsm/pkg/mq/rmq"
 	"github.com/HEUDavid/go-fsm/pkg/util"
 	"time"
 )
 
-func main() {
-	mq := rmq.Factory{Section: "rmq_cloud"}
+func genMQ(t string) mq.IMQ {
+	switch t {
+	case "sqs":
+		return &aws.Factory{Section: "sqs_aws"}
+	case "rmq":
+		return &rmq.Factory{Section: "rmq_cloud"}
+	}
+	return nil
+}
 
-	config := (*util.GetConfig())[mq.GetMQSection()].(util.Config)
-	if err := mq.InitMQ(config); err != nil {
+func main() {
+	_mq := genMQ("sqs")
+
+	config := (*util.GetConfig())[_mq.GetMQSection()].(util.Config)
+	if err := _mq.InitMQ(config); err != nil {
 		panic(err)
 	}
 
-	go mq.Start()
+	go _mq.Start()
 
 	go func() {
 		for {
-			_, msg, ack := mq.FetchMessage(context.TODO())
+			_, msg, ack := _mq.FetchMessage(context.TODO())
 			fmt.Println("FetchMessage:", msg)
 			if ack != nil {
 				_ = ack()
@@ -31,7 +43,7 @@ func main() {
 	go func() {
 		for i := 1; ; i++ {
 			msg := fmt.Sprintf("Hello %d", i)
-			_ = mq.PublishMessage(context.TODO(), msg)
+			_ = _mq.PublishMessage(context.TODO(), msg)
 			fmt.Println("PublishMessage:", msg)
 
 			time.Sleep(3 * time.Second)
