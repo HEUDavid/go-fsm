@@ -122,7 +122,7 @@ _ = PayFSM.Draw("pay.svg")
 - **Reentrancy of State Handlers**:
   - Ensure idempotency when developers call other external interfaces, then the system is reentrant (safe calling)
 - **Messages Be Lost (Using the Framework's MQ Component)?**:
-  - When the state handler returns an error, ACK will not be executed, waiting for the MQ server to redistribute to the queue, automatic retry
+  - When the state handler returns an error, ACK will not be executed, waiting for the MQ server to redistribute to the queue (ttl or abnormal process)
   - RMQ cluster is reliable, but even if messages are lost, it's okay. Messages are stateless, you can use script tools for resend or implement monitoring logic for resend (one practice is to detect state stays)
   - AWS Amazon Simple Queue Service, more reliable...
 
