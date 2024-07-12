@@ -32,8 +32,7 @@ func (s State[Data]) Handle(task *Task[Data]) error {
 		return s.Handler(task)
 	}
 
-	// TODO implement me
-	panic("[FSM] implement me")
+	panic(fmt.Sprintf("[FSM] implement me: %s", s.GetName()))
 }
 
 func GenState[Data DataEntity](name string, isFinal bool, handler func(task *Task[Data]) error) State[Data] {
