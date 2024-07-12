@@ -6,5 +6,5 @@ import (
 )
 
 func TestFindProjectRoot(t *testing.T) {
-	log.Println("Project Root:", FindProjectRoot())
+	log.Printf("Project Root: %s", FindProjectRoot())
 }
