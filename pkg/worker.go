@@ -4,21 +4,24 @@ import (
 	"context"
 	"github.com/HEUDavid/go-fsm/internal"
 	. "github.com/HEUDavid/go-fsm/pkg/metadata"
+	"github.com/HEUDavid/go-fsm/pkg/mq"
 	"github.com/HEUDavid/go-fsm/pkg/util"
 	"log"
+	"sync"
 )
 
 type IWorker[Data DataEntity] interface {
 	Init()
 	Run()
-	HandleMessage(c context.Context, msg string) error
+	Handle(c context.Context, msg string, ack mq.ACK) error
 }
 
 type Worker[Data DataEntity] struct {
 	internal.Base[Data]
-	ReInit          func()
-	ReRun           func()
-	ReHandleMessage func(c context.Context, msg string) error
+	MaxGoroutines int
+	ReInit        func()
+	ReRun         func()
+	ReHandle      func(c context.Context, msg string, ack mq.ACK) error
 }
 
 func (w *Worker[Data]) Init() {
@@ -44,22 +47,29 @@ func (w *Worker[Data]) Run() {
 	}
 
 	go func() {
+		var wg sync.WaitGroup
+		sem := make(chan struct{}, w.MaxGoroutines)
 		for {
-			c, msg, ack := w.FetchMessage(context.Background())
-			err := w.HandleMessage(c, msg)
-			if err == nil && ack != nil {
-				_ = ack()
-			}
+			wg.Add(1)
+			sem <- struct{}{}
+			go func() {
+				defer func() { wg.Done(); <-sem }()
+
+				c, msg, ack := w.FetchMessage(context.Background())
+				if err := w.Handle(c, msg, ack); err != nil {
+					log.Printf("[FSM] Handle Err: %v", err)
+				}
+			}()
 		}
 	}()
 }
 
-func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
-	if w.ReHandleMessage != nil {
-		return w.ReHandleMessage(c, msg)
+func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) error {
+	if w.ReHandle != nil {
+		return w.ReHandle(c, msg, ack)
 	}
 
-	log.Printf("[FSM] HandleMessage: %s", msg)
+	log.Printf("[FSM] Start Handle: %s", msg)
 
 	taskID := msg
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
@@ -95,6 +105,14 @@ func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
 	if err = w.PublishMessage(c, taskID); err != nil {
 		return err
 	}
+
+	if ack == nil {
+		return nil
+	}
+	if err = ack(); err != nil {
+		return err
+	}
+	log.Printf("[FSM] ACK: %s", msg)
 
 	return nil
 }
