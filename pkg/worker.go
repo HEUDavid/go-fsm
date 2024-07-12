@@ -57,7 +57,7 @@ func (w *Worker[Data]) Run() {
 
 				c, msg, ack := w.FetchMessage(context.Background())
 				if err := w.Handle(c, msg, ack); err != nil {
-					log.Printf("[FSM] Handle Err: %v", err)
+					log.Printf("[FSM] Handle %s ERROR: %v", msg, err)
 				}
 			}()
 		}
