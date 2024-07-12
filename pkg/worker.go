@@ -61,8 +61,9 @@ func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
 
 	data, _ := util.Assert[Data](util.ReflectNew(w.DataModel))
 	task := GenTaskInstance("", taskID, data)
+	task.WithDB = w.GetDB()
 
-	if err = internal.QueryTaskTx(c, w.GetDB(), w.Models, task); err != nil {
+	if err = internal.QueryTask(c, w.Models, task); err != nil {
 		return err
 	}
 
@@ -71,7 +72,7 @@ func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
 	}
 
 	task.RequestID = util.GenID()
-	if err = internal.UpdateTaskTx(c, w.GetDB(), w.Models, task, w.FSM); err != nil {
+	if err = internal.UpdateTask(c, w.Models, task, w.FSM); err != nil {
 		return err
 	}
 
