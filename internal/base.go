@@ -13,6 +13,7 @@ type IBase[Data DataEntity] interface {
 	RegisterDB(db db.IDB)
 	RegisterMQ(mq mq.IMQ)
 	RegisterFSM(fsm FSM[Data])
+	RegisterGenerator(genID func() string)
 }
 
 type Base[Data DataEntity] struct {
@@ -21,6 +22,7 @@ type Base[Data DataEntity] struct {
 	db.IDB
 	mq.IMQ
 	FSM[Data]
+	GenID func() string // ID Generator
 }
 
 func (b *Base[Data]) RegisterModel(dataModel, taskModel, uniqueRequestModel schema.Tabler) {
@@ -51,4 +53,8 @@ func (b *Base[Data]) RegisterMQ(mq mq.IMQ) {
 
 func (b *Base[Data]) RegisterFSM(fsm FSM[Data]) {
 	b.FSM = fsm
+}
+
+func (b *Base[Data]) RegisterGenerator(genID func() string) {
+	b.GenID = genID
 }
