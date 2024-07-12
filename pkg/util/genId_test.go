@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestGenID(t *testing.T) {
-	log.Println(GenID())
-	log.Println(GenID())
-	log.Println(GenID())
+func TestUniqueID(t *testing.T) {
+	log.Println(UniqueID())
+	log.Println(UniqueID())
+	log.Println(UniqueID())
 }

@@ -24,5 +24,3 @@ func UniqueID() string {
 	}
 	return GetMd5String(base64.URLEncoding.EncodeToString(b))
 }
-
-var GenID = UniqueID
