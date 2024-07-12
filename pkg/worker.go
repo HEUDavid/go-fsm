@@ -16,9 +16,17 @@ type IWorker[Data DataEntity] interface {
 
 type Worker[Data DataEntity] struct {
 	internal.Base[Data]
+	ReInit          func()
+	ReRun           func()
+	ReHandleMessage func(c context.Context, msg string) error
 }
 
 func (w *Worker[Data]) Init() {
+	if w.ReInit != nil {
+		w.ReInit()
+		return
+	}
+
 	if err := w.InitDB((*w.Config)[w.GetDBSection()].(util.Config)); err != nil {
 		panic(err)
 	}
@@ -27,10 +35,14 @@ func (w *Worker[Data]) Init() {
 		panic(err)
 	}
 	go w.Start()
-
 }
 
 func (w *Worker[Data]) Run() {
+	if w.ReRun != nil {
+		w.ReRun()
+		return
+	}
+
 	go func() {
 		for {
 			c, msg, ack := w.FetchMessage(context.Background())
@@ -43,6 +55,10 @@ func (w *Worker[Data]) Run() {
 }
 
 func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
+	if w.ReHandleMessage != nil {
+		return w.ReHandleMessage(c, msg)
+	}
+
 	log.Printf("[FSM] HandleMessage: %s", msg)
 
 	taskID := msg
