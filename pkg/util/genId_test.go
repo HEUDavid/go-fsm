@@ -1,12 +1,12 @@
 package util
 
 import (
-	"fmt"
+	"log"
 	"testing"
 )
 
 func TestGenID(t *testing.T) {
-	fmt.Println(GenID())
-	fmt.Println(GenID())
-	fmt.Println(GenID())
+	log.Println(GenID())
+	log.Println(GenID())
+	log.Println(GenID())
 }
