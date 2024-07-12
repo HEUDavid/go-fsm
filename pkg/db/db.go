@@ -6,7 +6,7 @@ import (
 )
 
 type IDB interface {
-	InitDB(config util.Config) error
 	GetDBSection() string
+	InitDB(config util.Config) error
 	GetDB() *gorm.DB
 }
