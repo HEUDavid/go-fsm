@@ -94,7 +94,7 @@ func (a *Adapter[Data]) Create(c context.Context, task *Task[Data]) error {
 		return err
 	}
 
-	task.SetTaskID(util.GenID())
+	task.SetTaskID(a.GenID())
 	task.State = a.FSM.InitialState.GetName()
 
 	if task.WithDB == nil {

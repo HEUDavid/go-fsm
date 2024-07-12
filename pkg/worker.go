@@ -87,7 +87,7 @@ func (w *Worker[Data]) HandleMessage(c context.Context, msg string) error {
 		return err
 	}
 
-	task.RequestID = util.GenID()
+	task.RequestID = w.GenID()
 	if err = internal.UpdateTask(c, w.Models, task, w.FSM); err != nil {
 		return err
 	}
