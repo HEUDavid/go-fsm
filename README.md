@@ -83,7 +83,7 @@ _ = PayFSM.Draw("pay.svg")
 - **Adapter**: Accepts external calls (no requirements for service interface protocols), core data read/write, interface satisfies idempotency
 - **Worker**: MQ message-driven, state handler, Worker calls are safe and reentrant
 
-<img src="./docs/assets/arch.png"  alt="arch"/>
+<img src="./docs/assets/arch.png" alt="Architecture"/>
 
 ## Main Capabilities
 
@@ -113,15 +113,15 @@ _ = PayFSM.Draw("pay.svg")
 
 ## Reliability Statement
 
-- **Idempotency of Interface**:
+- **Idempotency of Interface**
   - Create: request_id unique key ensures its idempotency
   - Update: request_id unique key ensures its idempotency, and version control (optimistic lock, at the DB level so performance is very good)
-- **Reliability of State Transition**:
+- **Reliability of State Transition**
   - Interface and Worker's transitions, first get the current state, judge whether the action is in the pre-defined state transition table
   - Updates are based on version
-- **Reentrancy of State Handlers**:
+- **Reentrancy of State Handlers**
   - Ensure idempotency when developers call other external interfaces, then the system is reentrant (safe calling)
-- **Messages Be Lost (Using the Framework's MQ Component)?**:
+- **Messages Be Lost (Using the Framework's MQ Component)?**
   - When the state handler returns an error, ACK will not be executed, waiting for the MQ server to redistribute to the queue (ttl or abnormal process)
   - RMQ cluster is reliable, but even if messages are lost, it's okay. Messages are stateless, you can use script tools for resend or implement monitoring logic for resend (one practice is to detect state stays)
   - AWS Amazon Simple Queue Service, more reliable...
