@@ -34,7 +34,7 @@ func main() {
 	go func() {
 		for {
 			msg := _mq.FetchMessage(context.TODO())
-			log.Printf("FetchMessage: %s", msg.Msg)
+			log.Printf("FetchMessage: %s", msg.Body)
 
 			err := msg.Ack()
 			log.Println(err)
