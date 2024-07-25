@@ -85,10 +85,10 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 		}
 	}()
 
-	ctx := msg.C
+	c := msg.C
 	taskID := msg.Body
 
-	state, err := internal.QueryTaskState(ctx, w.GetDB(), w.Models, taskID)
+	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
 	log.Printf("[FSM] Start handle %s, %s, %v", taskID, *state, err)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 	task := GenTaskInstance("", taskID, data)
 	task.WithDB = w.GetDB()
 
-	if err = internal.QueryTask(ctx, w.Models, task); err != nil {
+	if err = internal.QueryTask(c, w.Models, task); err != nil {
 		return err
 	}
 
@@ -115,11 +115,11 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 	}
 
 	task.RequestID = w.GenID()
-	if err = internal.UpdateTask(ctx, w.Models, task, w.FSM); err != nil {
+	if err = internal.UpdateTask(c, w.Models, task, w.FSM); err != nil {
 		return err
 	}
 
-	if err = w.PublishMessage(ctx, taskID); err != nil {
+	if err = w.PublishMessage(c, taskID); err != nil {
 		return err
 	}
 
