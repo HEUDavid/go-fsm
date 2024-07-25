@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/HEUDavid/go-fsm/internal"
 	. "github.com/HEUDavid/go-fsm/pkg/metadata"
-	"github.com/HEUDavid/go-fsm/pkg/mq"
+	. "github.com/HEUDavid/go-fsm/pkg/mq"
 	"github.com/HEUDavid/go-fsm/pkg/util"
 	"log"
 	"sync"
@@ -13,15 +13,15 @@ import (
 type IWorker[Data DataEntity] interface {
 	Init()
 	Run()
-	Handle(c context.Context, msg string, ack mq.ACK) error
+	Handle(msg Message) error
 }
 
 type Worker[Data DataEntity] struct {
 	internal.Base[Data]
-	MaxGoroutines int
 	ReInit        func()
 	ReRun         func()
-	ReHandle      func(c context.Context, msg string, ack mq.ACK) error
+	ReHandle      func(msg Message) error
+	MaxGoroutines int
 }
 
 func (w *Worker[Data]) Init() {
@@ -38,6 +38,7 @@ func (w *Worker[Data]) Init() {
 		panic(err)
 	}
 	go w.IMQ.Start()
+
 }
 
 func (w *Worker[Data]) Run() {
@@ -55,31 +56,37 @@ func (w *Worker[Data]) Run() {
 			go func() {
 				defer func() { wg.Done(); <-sem }()
 
-				c, msg, ack := w.FetchMessage(context.Background())
-				if err := w.Handle(c, msg, ack); err != nil {
-					log.Printf("[FSM] Handle %s ERROR: %v", msg, err)
+				msg := w.FetchMessage(context.Background())
+				if err := w.Handle(msg); err != nil {
+					log.Printf("[FSM] Handle %s ERROR: %v", msg.Body, err)
 				}
 			}()
 		}
 	}()
 }
 
-func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err error) {
+func (w *Worker[Data]) Handle(msg Message) (err error) {
 	if w.ReHandle != nil {
-		return w.ReHandle(c, msg, ack)
+		return w.ReHandle(msg)
 	}
 
 	defer func() {
-		log.Printf("[FSM] Finish handle %s %v", msg, err)
+		log.Printf("[FSM] Finish handle %s %v", msg.Body, err)
 		if err != nil {
+			if msg.Nack != nil {
+				e := msg.Nack()
+				log.Printf("[FSM] NACK %s %v", msg.Body, e)
+			}
 			return
 		}
-		err = ack()
-		log.Printf("[FSM] ACK %s %v", msg, err)
+		if msg.Ack != nil {
+			e := msg.Ack()
+			log.Printf("[FSM] ACK %s %v", msg.Body, e)
+		}
 	}()
 
-	taskID := msg
-	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
+	taskID := msg.Body
+	state, err := internal.QueryTaskState(msg.C, w.GetDB(), w.Models, taskID)
 	log.Printf("[FSM] Start handle %s, %s, %v", taskID, *state, err)
 	if err != nil {
 		return err
@@ -97,7 +104,7 @@ func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err er
 	task := GenTaskInstance("", taskID, data)
 	task.WithDB = w.GetDB()
 
-	if err = internal.QueryTask(c, w.Models, task); err != nil {
+	if err = internal.QueryTask(msg.C, w.Models, task); err != nil {
 		return err
 	}
 
@@ -106,11 +113,11 @@ func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err er
 	}
 
 	task.RequestID = w.GenID()
-	if err = internal.UpdateTask(c, w.Models, task, w.FSM); err != nil {
+	if err = internal.UpdateTask(msg.C, w.Models, task, w.FSM); err != nil {
 		return err
 	}
 
-	if err = w.PublishMessage(c, taskID); err != nil {
+	if err = w.PublishMessage(msg.C, taskID); err != nil {
 		return err
 	}
 
