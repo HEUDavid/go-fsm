@@ -95,7 +95,7 @@ func (f *Factory) Start() {
 	for delivery := range deliveries {
 		f.buffer <- mq.Message{
 			C:    context.Background(),
-			Msg:  string(delivery.Body),
+			Body: string(delivery.Body),
 			Ack:  func() error { return delivery.Ack(false) },
 			Nack: func() error { return delivery.Nack(false, true) },
 		}
