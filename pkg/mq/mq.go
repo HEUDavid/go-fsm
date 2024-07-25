@@ -7,7 +7,7 @@ import (
 
 type Message struct {
 	C    context.Context
-	Msg  string
+	Body string
 	Ack  func() error
 	Nack func() error
 }
