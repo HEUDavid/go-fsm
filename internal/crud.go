@@ -32,7 +32,7 @@ func AddUnique[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Dat
 
 	mysqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
-		return false, fmt.Errorf("assert MySQLError: %v", mysqlErr)
+		return false, fmt.Errorf("assert MySQLError: %w", mysqlErr)
 	}
 
 	switch mysqlErr.Number {
