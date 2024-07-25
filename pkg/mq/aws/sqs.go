@@ -13,15 +13,9 @@ import (
 	"time"
 )
 
-type Message struct {
-	c   context.Context
-	msg *sqs.Message
-	ack func() error
-}
-
 type Factory struct {
 	Section string
-	buffer  chan Message
+	buffer  chan mq.Message
 	queue   string
 	sqs     *sqs.SQS
 }
@@ -38,7 +32,7 @@ func (f *Factory) InitMQ(config util.Config) error {
 	region := config["region"].(string)
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
+		Region:      &region,
 		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
 	})
 	if err != nil {
@@ -47,14 +41,14 @@ func (f *Factory) InitMQ(config util.Config) error {
 
 	f.sqs = sqs.New(sess)
 
-	f.buffer = make(chan Message)
+	f.buffer = make(chan mq.Message)
 
 	return nil
 }
 
 func (f *Factory) PublishMessage(c context.Context, msg string) error {
 	if _, err := f.sqs.SendMessage(&sqs.SendMessageInput{
-		MessageBody: aws.String(msg),
+		MessageBody: &msg,
 		QueueUrl:    &f.queue,
 	}); err != nil {
 		return err
@@ -62,12 +56,12 @@ func (f *Factory) PublishMessage(c context.Context, msg string) error {
 	return nil
 }
 
-func (f *Factory) FetchMessage(c context.Context) (context.Context, string, mq.ACK) {
+func (f *Factory) FetchMessage(c context.Context) mq.Message {
 	msg, ok := <-f.buffer
 	if !ok {
-		return context.Background(), "", nil
+		return mq.Message{C: c}
 	}
-	return msg.c, *msg.msg.Body, msg.ack
+	return msg
 }
 
 func (f *Factory) Start() {
@@ -83,15 +77,27 @@ func (f *Factory) Start() {
 		}
 
 		for _, message := range result.Messages {
-			f.buffer <- Message{
-				c:   context.Background(),
-				msg: message,
-				ack: func() error {
-					if _, err = f.sqs.DeleteMessage(&sqs.DeleteMessageInput{
+			f.buffer <- mq.Message{
+				C:   context.Background(),
+				Msg: *message.Body,
+
+				Ack: func() error {
+					if _, e := f.sqs.DeleteMessage(&sqs.DeleteMessageInput{
 						QueueUrl:      &f.queue,
 						ReceiptHandle: message.ReceiptHandle,
-					}); err != nil {
-						return fmt.Errorf("error deleting message: %w", err)
+					}); e != nil {
+						return fmt.Errorf("error delete message: %w", e)
+					}
+					return nil
+				},
+
+				Nack: func() error {
+					if _, e := f.sqs.ChangeMessageVisibility(&sqs.ChangeMessageVisibilityInput{
+						QueueUrl:          &f.queue,
+						ReceiptHandle:     message.ReceiptHandle,
+						VisibilityTimeout: aws.Int64(0),
+					}); e != nil {
+						return fmt.Errorf("error change message visibility: %w", e)
 					}
 					return nil
 				},
