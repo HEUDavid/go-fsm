@@ -8,14 +8,9 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Message struct {
-	c        context.Context
-	delivery *amqp.Delivery
-}
-
 type Factory struct {
 	Section string
-	buffer  chan Message
+	buffer  chan mq.Message
 	conn    *amqp.Connection
 	ch      *amqp.Channel
 	q       amqp.Queue
@@ -57,7 +52,7 @@ func (f *Factory) InitMQ(config util.Config) error {
 	f.ch = ch
 	f.q = q
 
-	f.buffer = make(chan Message)
+	f.buffer = make(chan mq.Message)
 
 	return nil
 }
@@ -75,12 +70,12 @@ func (f *Factory) PublishMessage(c context.Context, msg string) error {
 	return err
 }
 
-func (f *Factory) FetchMessage(c context.Context) (context.Context, string, mq.ACK) {
+func (f *Factory) FetchMessage(c context.Context) mq.Message {
 	msg, ok := <-f.buffer
 	if !ok {
-		return context.Background(), "", nil
+		return mq.Message{C: c}
 	}
-	return msg.c, string(msg.delivery.Body), func() error { return msg.delivery.Ack(false) }
+	return msg
 }
 
 func (f *Factory) Start() {
@@ -97,7 +92,12 @@ func (f *Factory) Start() {
 		panic(err)
 	}
 
-	for d := range deliveries {
-		f.buffer <- Message{c: context.Background(), delivery: &d}
+	for delivery := range deliveries {
+		f.buffer <- mq.Message{
+			C:    context.Background(),
+			Msg:  string(delivery.Body),
+			Ack:  func() error { return delivery.Ack(false) },
+			Nack: func() error { return delivery.Nack(false, true) },
+		}
 	}
 }
