@@ -33,11 +33,11 @@ func main() {
 
 	go func() {
 		for {
-			_, msg, ack := _mq.FetchMessage(context.TODO())
-			log.Printf("FetchMessage: %s", msg)
-			if ack != nil {
-				_ = ack()
-			}
+			msg := _mq.FetchMessage(context.TODO())
+			log.Printf("FetchMessage: %s", msg.Msg)
+
+			err := msg.Ack()
+			log.Println(err)
 		}
 	}()
 
@@ -46,12 +46,11 @@ func main() {
 			msg := fmt.Sprintf("Hello %d", i)
 			_ = _mq.PublishMessage(context.TODO(), msg)
 			log.Printf("PublishMessage: %s", msg)
-			time.Sleep(2 * time.Second)
+			time.Sleep(3 * time.Second)
 		}
 	}()
 
 	forever := make(chan bool)
 	log.Println("Exit press CTRL+C...")
 	<-forever
-
 }
