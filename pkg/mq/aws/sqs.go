@@ -78,8 +78,8 @@ func (f *Factory) Start() {
 
 		for _, message := range result.Messages {
 			f.buffer <- mq.Message{
-				C:   context.Background(),
-				Msg: *message.Body,
+				C:    context.Background(),
+				Body: *message.Body,
 
 				Ack: func() error {
 					if _, e := f.sqs.DeleteMessage(&sqs.DeleteMessageInput{
