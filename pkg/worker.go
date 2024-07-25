@@ -37,7 +37,7 @@ func (w *Worker[Data]) Init() {
 	if err := w.InitMQ((*w.Config)[w.GetMQSection()].(util.Config)); err != nil {
 		panic(err)
 	}
-	go w.Start()
+	go w.IMQ.Start()
 }
 
 func (w *Worker[Data]) Run() {
@@ -77,10 +77,10 @@ func (w *Worker[Data]) Handle(c context.Context, msg string, ack mq.ACK) (err er
 		err = ack()
 		log.Printf("[FSM] ACK %s %v", msg, err)
 	}()
-	log.Printf("[FSM] Start handle %s", msg)
 
 	taskID := msg
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
+	log.Printf("[FSM] Start handle %s, %s, %v", taskID, *state, err)
 	if err != nil {
 		return err
 	}
