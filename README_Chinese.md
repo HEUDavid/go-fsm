@@ -120,7 +120,7 @@ _ = PayFSM.Draw("pay.svg")
   - 当状态处理器返回error时，不会执行ACK(执行NACK如果NACK不为nil)，可以配置MQ服务端重新入队
   - RMQ集群是可靠的，但万一消息丢了也无妨。消息是无状态的，可使用脚本工具运维补发，或实现监控逻辑补发(
     一个实践是对状态进行停留检测)
-  - AWS Amazon Simple Queue Service，更可靠，利用删除消息和消息可见性机制实现了ACK与NACK逻辑。
+  - AWS Amazon Simple Queue Service，更可靠，利用删除消息和消息可见性机制实现了ACK与NACK逻辑
 
 ## 一些总结
 
