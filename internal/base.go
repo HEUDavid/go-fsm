@@ -9,7 +9,7 @@ import (
 )
 
 type IBase[Data DataEntity] interface {
-	RegisterModel(dataModel, taskModel, uniqueRequestModel schema.Tabler)
+	RegisterModel(dataModel DataEntity, taskModel, uniqueRequestModel schema.Tabler)
 	RegisterDB(db db.IDB)
 	RegisterMQ(mq mq.IMQ)
 	RegisterFSM(fsm FSM[Data])
@@ -25,7 +25,7 @@ type Base[Data DataEntity] struct {
 	GenID func() string // ID Generator
 }
 
-func (b *Base[Data]) RegisterModel(dataModel, taskModel, uniqueRequestModel schema.Tabler) {
+func (b *Base[Data]) RegisterModel(dataModel DataEntity, taskModel, uniqueRequestModel schema.Tabler) {
 	if !(dataModel != nil && taskModel != nil && uniqueRequestModel != nil) {
 		panic("[FSM] Model data、task、unique_request should not be nil")
 	}

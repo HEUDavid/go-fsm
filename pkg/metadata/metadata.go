@@ -7,7 +7,7 @@ import (
 )
 
 type Models struct {
-	DataModel          schema.Tabler
+	DataModel          DataEntity
 	TaskModel          schema.Tabler
 	UniqueRequestModel schema.Tabler
 	TaskFlowModel      schema.Tabler // TaskFlow and DataFlow is optional, if not set,
