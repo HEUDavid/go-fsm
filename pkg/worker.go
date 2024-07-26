@@ -84,12 +84,13 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 			log.Printf("[FSM] ACK %s %v", msg.Body, e)
 		}
 	}()
+	log.Printf("[FSM] Start handle %s", msg.Body)
 
 	c := msg.C
 	taskID := msg.Body
 
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
-	log.Printf("[FSM] Start handle %s, %s, %v", taskID, *state, err)
+	log.Printf("[FSM] Task %s %s %v", taskID, *state, err)
 	if err != nil {
 		return err
 	}
