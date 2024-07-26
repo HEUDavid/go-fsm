@@ -1,10 +1,10 @@
 module github.com/HEUDavid/go-fsm
 
-go 1.23
+go 1.22
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/aws/aws-sdk-go v1.54.18
+	github.com/aws/aws-sdk-go v1.55.3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
