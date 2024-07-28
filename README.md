@@ -124,7 +124,7 @@ _ = PayFSM.Draw("pay.svg")
 - **Messages Be Lost (Using the Framework's MQ Component)?**
   - Ack: When the state handler returns an error, do not execute ack (execute nack if nack is not nil), waiting for the MQ server to redistribute to the queue (ttl or abnormal process...)
   - RMQ cluster is reliable, but even if messages are lost, it's okay. Messages are stateless, you can use script tools for resend or implement monitoring logic for resend (one practice is to detect state stays)
-  - AWS Amazon Simple Queue Service is more reliable. See aws/sqs.go for details.
+  - AWS Amazon Simple Queue Service is more reliable. See aws/sqs.go for details
 
 
 ## Contact Me
