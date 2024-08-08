@@ -22,7 +22,7 @@ func genMQ(t string) mq.IMQ {
 }
 
 func main() {
-	_mq := genMQ("sqs")
+	_mq := genMQ("rmq")
 
 	config := (*util.GetConfig())[_mq.GetMQSection()].(util.Config)
 	if err := _mq.InitMQ(config); err != nil {
