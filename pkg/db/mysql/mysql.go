@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/HEUDavid/go-fsm/pkg/util"
-	sqlDriver "github.com/go-sql-driver/mysql"
+	mysqlDriver "github.com/go-sql-driver/mysql"
 	"golang.org/x/net/proxy"
 	gormDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -46,7 +46,7 @@ func (f *Factory) makeDsn() error {
 	if err != nil {
 		return err
 	}
-	sqlDriver.RegisterDialContext("fixieDial", func(ctx context.Context, addr string) (net.Conn, error) {
+	mysqlDriver.RegisterDialContext("fixieDial", func(ctx context.Context, addr string) (net.Conn, error) {
 		return dialer.Dial("tcp", addr)
 	})
 	f.makeURL("fixieDial")
