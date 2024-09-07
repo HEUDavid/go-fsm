@@ -1,8 +1,7 @@
 <h1 align="center">go-fsm</h1>
 <h3 align="center">The Finite State Machine Development Framework Implemented in Go</h3>
 
-
-### [中文版本](https://github.com/HEUDavid/go-fsm/blob/main/README_Chinese.md)
+<h4 align="right">[中文](README_Chinese.md) | English</h4>
 
 ## Introduction
 
