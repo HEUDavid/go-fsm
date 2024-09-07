@@ -21,7 +21,7 @@ require (
 
 ## Example
 
-A sample state handler
+A state handler example
 
 ```go
 func newHandler(task *Task[*MyData]) error {
