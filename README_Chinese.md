@@ -1,6 +1,8 @@
 <h1 align="center">go-fsm</h1>
 <h3 align="center">The Finite State Machine Development Framework Implemented in Go</h3>
 
+#### [中文](README_Chinese.md) | [English](README.md)
+
 ## 简介
 
 go-fsm 是一个分布式状态机开发框架，核心是自动化的状态流转，能帮助开发者更简单地开发出需要完成分布式事务的应用。
