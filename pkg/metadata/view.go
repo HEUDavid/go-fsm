@@ -64,10 +64,9 @@ type IFSM[Data DataEntity] interface {
 }
 
 type FSM[Data DataEntity] struct {
-	Name         string
-	InitialState State[Data]
-	States       map[string]State[Data]
-	Transitions  map[string]Transition[Data]
+	Name        string
+	States      map[string]State[Data]
+	Transitions map[string]Transition[Data]
 }
 
 func (f *FSM[Data]) GetState(state string) (State[Data], bool) {
@@ -145,11 +144,10 @@ func (f *FSM[Data]) Draw(path string) error {
 	return nil
 }
 
-func GenFSM[Data DataEntity](name string, initial State[Data]) FSM[Data] {
+func GenFSM[Data DataEntity](name string) FSM[Data] {
 	return FSM[Data]{
-		Name:         name,
-		InitialState: initial,
-		States:       map[string]State[Data]{},
-		Transitions:  map[string]Transition[Data]{},
+		Name:        name,
+		States:      map[string]State[Data]{},
+		Transitions: map[string]Transition[Data]{},
 	}
 }
