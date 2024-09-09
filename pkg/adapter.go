@@ -64,7 +64,6 @@ func (a *Adapter[Data]) BeforeCreate(c context.Context, task *Task[Data]) error 
 		return a.ReBeforeCreate(c, task)
 	}
 
-	task.State = a.FSM.InitialState.GetName()
 	task.Version = 1
 	return nil
 }
