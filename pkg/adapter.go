@@ -80,7 +80,7 @@ func (a *Adapter[Data]) CreateCheck(c context.Context, task *Task[Data]) error {
 		return fmt.Errorf("task.Type empty")
 	}
 	if task.State == "" {
-		return fmt.Errorf("task.InitialState empty")
+		return fmt.Errorf("initial task.State should not be empty")
 	}
 	return nil
 }
