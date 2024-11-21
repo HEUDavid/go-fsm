@@ -73,7 +73,7 @@ func (f *Factory) InitDB(config util.Config) error {
 
 	sqlDB.SetMaxOpenConns(int(f.config["maxOpenConns"].(int64)))
 	sqlDB.SetMaxIdleConns(int(f.config["maxIdleConns"].(int64)))
-	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetConnMaxLifetime(300 * time.Second)
 
 	f.DB = db
 
