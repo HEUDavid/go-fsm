@@ -10,7 +10,7 @@ import (
 )
 
 func AddTaskFlow[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], queryFirst bool) error {
-	if m.TaskFlowModel == nil || m.DataModel == nil {
+	if m.TaskFlowModel == nil || m.DataFlowModel == nil {
 		return nil
 	}
 	return nil
