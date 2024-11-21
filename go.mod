@@ -1,6 +1,6 @@
 module github.com/HEUDavid/go-fsm
 
-go 1.22
+go 1.23.3
 
 require (
 	github.com/BurntSushi/toml v1.4.0
