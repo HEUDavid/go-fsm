@@ -18,7 +18,7 @@ func TestFSM_Draw(t *testing.T) {
 		PaySucc  = State[*testData]{Name: "PaySucc", IsFinal: true}
 		PayFail  = State[*testData]{Name: "PayFail", IsFinal: true}
 	)
-	fsm := GenFSM("Audits", New)
+	fsm := GenFSM[*testData]("Audits")
 	fsm.RegisterTransition(
 		GenTransition(New, Frozen),
 		GenTransition(Frozen, Audit),
