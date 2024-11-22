@@ -65,45 +65,48 @@ func (f *Factory) FetchMessage(c context.Context) mq.Message {
 }
 
 func (f *Factory) Start() {
-	for {
-		result, err := f.sqs.ReceiveMessage(&sqs.ReceiveMessageInput{
-			QueueUrl:            &f.queue,
-			MaxNumberOfMessages: aws.Int64(1),
-			WaitTimeSeconds:     aws.Int64(20),
-		})
-		if err != nil {
-			log.Printf("[FSM] Error receiving message: %v", err)
-			continue
-		}
-
-		for _, message := range result.Messages {
-			f.buffer <- mq.Message{
-				C:    context.Background(),
-				Body: *message.Body,
-
-				Ack: func() error {
-					if _, e := f.sqs.DeleteMessage(&sqs.DeleteMessageInput{
-						QueueUrl:      &f.queue,
-						ReceiptHandle: message.ReceiptHandle,
-					}); e != nil {
-						return fmt.Errorf("error delete message: %w", e)
-					}
-					return nil
-				},
-
-				Nack: func() error {
-					if _, e := f.sqs.ChangeMessageVisibility(&sqs.ChangeMessageVisibilityInput{
-						QueueUrl:          &f.queue,
-						ReceiptHandle:     message.ReceiptHandle,
-						VisibilityTimeout: aws.Int64(0),
-					}); e != nil {
-						return fmt.Errorf("error change message visibility: %w", e)
-					}
-					return nil
-				},
+	go func() {
+		for {
+			result, err := f.sqs.ReceiveMessage(&sqs.ReceiveMessageInput{
+				QueueUrl:            &f.queue,
+				MaxNumberOfMessages: aws.Int64(1),
+				WaitTimeSeconds:     aws.Int64(20),
+			})
+			if err != nil {
+				log.Printf("[FSM] Error receiving message: %v", err)
+				continue
 			}
+
+			for _, message := range result.Messages {
+				f.buffer <- mq.Message{
+					C:    context.Background(),
+					Body: *message.Body,
+
+					Ack: func() error {
+						if _, e := f.sqs.DeleteMessage(&sqs.DeleteMessageInput{
+							QueueUrl:      &f.queue,
+							ReceiptHandle: message.ReceiptHandle,
+						}); e != nil {
+							return fmt.Errorf("error delete message: %w", e)
+						}
+						return nil
+					},
+
+					Nack: func() error {
+						if _, e := f.sqs.ChangeMessageVisibility(&sqs.ChangeMessageVisibilityInput{
+							QueueUrl:          &f.queue,
+							ReceiptHandle:     message.ReceiptHandle,
+							VisibilityTimeout: aws.Int64(0),
+						}); e != nil {
+							return fmt.Errorf("error change message visibility: %w", e)
+						}
+						return nil
+					},
+				}
+			}
+
+			time.Sleep(time.Second)
 		}
 
-		time.Sleep(time.Second)
-	}
+	}()
 }
