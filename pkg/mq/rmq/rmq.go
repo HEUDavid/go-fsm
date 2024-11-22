@@ -168,9 +168,11 @@ func (f *Factory) InitMQ(config util.Config) error {
 	queue := config["queue"].(string)
 
 	f.consumer = NewRmqClient(url, queue, make(chan *mq.Message))
-	f.publisher = NewRmqClient(url, queue, nil)
-
 	f.buffer = f.consumer.consumerBuffer
+
+	f.publisher = NewRmqClient(url, queue, nil)
+	f.publisher.Start()
+
 	return nil
 }
 
@@ -188,7 +190,6 @@ func (f *Factory) FetchMessage(c context.Context) mq.Message {
 
 func (f *Factory) Start() {
 	f.consumer.Start()
-	f.publisher.Start()
 }
 
 func (f *Factory) Stop() {
