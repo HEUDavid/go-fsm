@@ -22,7 +22,7 @@ type RabbitmqClient struct {
 
 func (r *RabbitmqClient) Type() string {
 	if r.consumerBuffer == nil {
-		return "publisher"
+		return "producer"
 	}
 	return "consumer"
 }
@@ -49,7 +49,7 @@ func (r *RabbitmqClient) Connect() error {
 		return fmt.Errorf("queueDeclare Err: %v", err)
 	}
 
-	if r.Type() == "publisher" {
+	if r.Type() == "producer" {
 		return nil
 	}
 
@@ -90,7 +90,7 @@ func (r *RabbitmqClient) Reconnect() {
 		}
 
 		if err := r.Connect(); err != nil {
-			log.Printf("%s connect Err: %v\n", r.Type(), err)
+			log.Printf("%s(%p) connect Err: %v\n", r.Type(), r, err)
 			time.Sleep(time.Second)
 
 			continue
@@ -101,7 +101,7 @@ func (r *RabbitmqClient) Reconnect() {
 
 		select {
 		case <-connClose:
-			log.Printf("%s reconnect...", r.Type())
+			log.Printf("%s(%p) reconnect...", r.Type(), r)
 		case <-r.done:
 			return
 		}
@@ -150,10 +150,10 @@ func NewRmqClient(url, queue string, consumerBuffer chan *mq.Message) *RabbitmqC
 }
 
 type Factory struct {
-	Section   string
-	buffer    chan *mq.Message
-	publisher *RabbitmqClient
-	consumer  *RabbitmqClient
+	Section  string
+	buffer   chan *mq.Message
+	producer *RabbitmqClient
+	consumer *RabbitmqClient
 }
 
 func (f *Factory) GetMQSection() string {
@@ -170,14 +170,14 @@ func (f *Factory) InitMQ(config util.Config) error {
 	f.consumer = NewRmqClient(url, queue, make(chan *mq.Message))
 	f.buffer = f.consumer.consumerBuffer
 
-	f.publisher = NewRmqClient(url, queue, nil)
-	f.publisher.Start()
+	f.producer = NewRmqClient(url, queue, nil)
+	f.producer.Start()
 
 	return nil
 }
 
 func (f *Factory) PublishMessage(c context.Context, msg string) error {
-	return f.publisher.Publish(msg)
+	return f.producer.Publish(msg)
 }
 
 func (f *Factory) FetchMessage(c context.Context) mq.Message {
@@ -193,6 +193,6 @@ func (f *Factory) Start() {
 }
 
 func (f *Factory) Stop() {
-	f.publisher.Stop()
+	f.producer.Stop()
 	f.consumer.Stop()
 }
