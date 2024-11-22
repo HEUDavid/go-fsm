@@ -37,7 +37,7 @@ func (w *Worker[Data]) Init() {
 	if err := w.InitMQ((*w.Config)[w.GetMQSection()].(util.Config)); err != nil {
 		panic(err)
 	}
-	go w.IMQ.Start()
+	w.IMQ.Start() // Start Consumer
 
 }
 
