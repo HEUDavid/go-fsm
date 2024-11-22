@@ -40,7 +40,7 @@ func (r *RabbitmqClient) Connect() error {
 
 	if _, err = r.channel.QueueDeclare(
 		r.queueName,
-		true,
+		false,
 		false,
 		false,
 		false,
