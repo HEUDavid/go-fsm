@@ -15,7 +15,7 @@ import (
 
 type Factory struct {
 	Section string
-	buffer  chan mq.Message
+	buffer  chan *mq.Message
 	queue   string
 	sqs     *sqs.SQS
 }
@@ -41,7 +41,7 @@ func (f *Factory) InitMQ(config util.Config) error {
 
 	f.sqs = sqs.New(sess)
 
-	f.buffer = make(chan mq.Message)
+	f.buffer = make(chan *mq.Message)
 
 	return nil
 }
@@ -61,7 +61,7 @@ func (f *Factory) FetchMessage(c context.Context) mq.Message {
 	if !ok {
 		return mq.Message{C: c}
 	}
-	return msg
+	return *msg
 }
 
 func (f *Factory) Start() {
@@ -78,7 +78,7 @@ func (f *Factory) Start() {
 			}
 
 			for _, message := range result.Messages {
-				f.buffer <- mq.Message{
+				f.buffer <- &mq.Message{
 					C:    context.Background(),
 					Body: *message.Body,
 
