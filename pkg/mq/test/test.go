@@ -29,23 +29,29 @@ func main() {
 		panic(err)
 	}
 
-	go _mq.Start()
+	_mq.Start()
 
 	go func() {
 		for {
 			msg := _mq.FetchMessage(context.TODO())
-			log.Printf("FetchMessage: %s", msg.Body)
+			log.Printf("FetchMessage  : %s", msg.Body)
 
 			err := msg.Ack()
-			log.Println(err)
+			log.Println("ACK:", err)
 		}
 	}()
 
 	go func() {
-		for i := 1; ; i++ {
-			msg := fmt.Sprintf("Hello %d", i)
-			_ = _mq.PublishMessage(context.TODO(), msg)
-			log.Printf("PublishMessage: %s", msg)
+		idx := 0
+		for {
+			msg := fmt.Sprintf("Hello %d", idx)
+			err := _mq.PublishMessage(context.TODO(), msg)
+			if err != nil {
+				log.Printf("PublishMessage Err: %v", err)
+			} else {
+				log.Printf("PublishMessage: %s", msg)
+				idx += 1
+			}
 			time.Sleep(3 * time.Second)
 		}
 	}()
