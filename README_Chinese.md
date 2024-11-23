@@ -40,7 +40,7 @@ func newHandler(task *Task[*MyData]) error {
 
 一个最简单的支付流程: New -> Pay -> End，其状态机定义如下
 
-(注: 完整Demo项目[链接](https://github.com/HEUDavid/go-fsm-demo))
+**(注: 完整Demo项目[链接](https://github.com/HEUDavid/go-fsm-demo))**
 ```go
 var (
 	New = GenState("New", false, newHandler)
@@ -55,7 +55,7 @@ var (
 )
 
 var PayFSM = func() FSM[*MyData] {
-	fsm := GenFSM("PayFSM", New)
+	fsm := GenFSM[*MyData]("PayFSM")
 	fsm.RegisterState(New, Pay, End)
 	fsm.RegisterTransition(New2Pay, Pay2End, End2End)
 	return fsm

@@ -40,7 +40,7 @@ func newHandler(task *Task[*MyData]) error {
 
 A simple payment flow: New -> Pay -> End, defined as follows
 
-(Note: Full Demo project [here](https://github.com/HEUDavid/go-fsm-demo))
+**(Note: Full Demo project [here](https://github.com/HEUDavid/go-fsm-demo))**
 
 ```go
 var (
@@ -56,7 +56,7 @@ var (
 )
 
 var PayFSM = func() FSM[*MyData] {
-	fsm := GenFSM("PayFSM", New)
+	fsm := GenFSM[*MyData]("PayFSM")
 	fsm.RegisterState(New, Pay, End)
 	fsm.RegisterTransition(New2Pay, Pay2End, End2End)
 	return fsm
