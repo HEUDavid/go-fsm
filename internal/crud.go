@@ -9,14 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddTaskFlow[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], queryFirst bool) error {
+func addTaskFlow[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], queryFirst bool) error {
 	if m.TaskFlowModel == nil || m.DataFlowModel == nil {
 		return nil
 	}
 	return nil
 }
 
-func AddUnique[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], needModifyTaskID bool) (bool, error) {
+func addUnique[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], needModifyTaskID bool) (bool, error) {
 	uniqueReq := struct {
 		RequestID string
 		TaskID    string
@@ -57,7 +57,7 @@ func CreateTask[Data DataEntity](c Context, m Models, task *Task[Data]) error {
 }
 
 func _createTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data]) error {
-	keyConflict, e := AddUnique(c, tx, m, task, true)
+	keyConflict, e := addUnique(c, tx, m, task, true)
 	if e != nil {
 		return e
 	}
@@ -72,7 +72,7 @@ func _createTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[D
 		return e
 	}
 
-	if e = AddTaskFlow(c, tx, m, task, false); e != nil {
+	if e = addTaskFlow(c, tx, m, task, false); e != nil {
 		return e
 	}
 
@@ -121,7 +121,7 @@ func UpdateTask[Data DataEntity](c Context, m Models, task *Task[Data], fsm FSM[
 }
 
 func _updateTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data], fsm FSM[Data]) error {
-	keyConflict, e := AddUnique(c, tx, m, task, false)
+	keyConflict, e := addUnique(c, tx, m, task, false)
 	if e != nil {
 		return e
 	}
@@ -156,7 +156,7 @@ func _updateTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[D
 		return e
 	}
 
-	if e = AddTaskFlow(c, tx, m, task, true); e != nil {
+	if e = addTaskFlow(c, tx, m, task, true); e != nil {
 		return e
 	}
 
