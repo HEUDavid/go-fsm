@@ -152,7 +152,7 @@ func _updateTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[D
 		return nil
 	}
 
-	if e = UpdateData(c, tx, m, task); e != nil {
+	if e = updateData(c, tx, m, task); e != nil {
 		return e
 	}
 
@@ -163,7 +163,7 @@ func _updateTask[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[D
 	return nil
 }
 
-func UpdateData[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data]) error {
+func updateData[Data DataEntity](c Context, tx *gorm.DB, m Models, task *Task[Data]) error {
 	_query := func(_tx *gorm.DB) *gorm.DB {
 		return _tx.Table(m.DataModel.TableName()).Where("task_id = ?", task.ID)
 	}
