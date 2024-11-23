@@ -9,7 +9,7 @@ func (t *testData) TableName() string       { return "" }
 
 func TestFSM_Draw(t *testing.T) {
 	var (
-		New      = State[*testData]{Name: "New"}
+		New      = GenState[*testData]("New", false, nil)
 		Frozen   = State[*testData]{Name: "Frozen"}
 		Audit    = State[*testData]{Name: "Audit"}
 		Approved = State[*testData]{Name: "Approved"}
@@ -18,7 +18,7 @@ func TestFSM_Draw(t *testing.T) {
 		PaySucc  = State[*testData]{Name: "PaySucc", IsFinal: true}
 		PayFail  = State[*testData]{Name: "PayFail", IsFinal: true}
 	)
-	fsm := GenFSM[*testData]("Audits")
+	fsm := GenFSM[*testData]("AUDITS")
 	fsm.RegisterTransition(
 		GenTransition(New, Frozen),
 		GenTransition(Frozen, Audit),
