@@ -23,7 +23,7 @@ func (f *Factory) GetDBSection() string {
 	return f.Section
 }
 
-func (f *Factory) makeURL(net string) {
+func (f *Factory) makeURL(net string) string {
 	f.url = fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=%t",
 		f.config["user"],
 		f.config["password"],
@@ -33,6 +33,7 @@ func (f *Factory) makeURL(net string) {
 		f.config["dbName"],
 		f.config["tls"],
 	)
+	return f.url
 }
 
 func (f *Factory) makeDsn() error {
