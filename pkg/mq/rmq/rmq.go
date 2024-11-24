@@ -158,8 +158,12 @@ func (f *Factory) InitMQ(config util.Config) error {
 	return nil
 }
 
-func (f *Factory) PublishMessage(c context.Context, msg string) error {
-	return f.MQ.Publish(msg)
+func (f *Factory) Start() {
+	go f.MQ.Consume()
+}
+
+func (f *Factory) Stop() {
+	f.MQ.Stop()
 }
 
 func (f *Factory) FetchMessage(c context.Context) mq.Message {
@@ -170,10 +174,6 @@ func (f *Factory) FetchMessage(c context.Context) mq.Message {
 	return *msg
 }
 
-func (f *Factory) Start() {
-	go f.MQ.Consume()
-}
-
-func (f *Factory) Stop() {
-	f.MQ.Stop()
+func (f *Factory) PublishMessage(c context.Context, msg string) error {
+	return f.MQ.Publish(msg)
 }
