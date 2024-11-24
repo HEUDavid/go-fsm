@@ -19,11 +19,7 @@ type RabbitmqClient struct {
 }
 
 func NewRmqClient(url, queue string) *RabbitmqClient {
-	return &RabbitmqClient{
-		buffer:    make(chan *mq.Message),
-		url:       url,
-		queueName: queue,
-	}
+	return &RabbitmqClient{url: url, queueName: queue}
 }
 
 func (r *RabbitmqClient) Connect() error {
@@ -48,15 +44,15 @@ func (r *RabbitmqClient) Connect() error {
 		return err
 	}
 
-	log.Printf("[FSM] rabbitmq(%p) connect success.\n", r)
+	log.Printf("[FSM] rabbitmq(%p) connect success.", r)
 	return nil
 }
 
 func (r *RabbitmqClient) Reconnect() {
 	for {
 		if err := r.Connect(); err != nil {
-			log.Printf("[FSM] rabbitmq(%p) connect Err: %v\n", r, err)
-			time.Sleep(time.Second * 2)
+			log.Printf("[FSM] rabbitmq(%p) connect Err: %v", r, err)
+			time.Sleep(time.Second * 3)
 			continue
 		}
 
@@ -66,7 +62,7 @@ func (r *RabbitmqClient) Reconnect() {
 
 		select {
 		case <-connClose:
-			log.Printf("[FSM] rabbitmq(%p) closed, reconnect...\n", r)
+			log.Printf("[FSM] rabbitmq(%p) closed, reconnect...", r)
 		}
 	}
 }
@@ -90,8 +86,8 @@ func (r *RabbitmqClient) Consume() error {
 			time.Sleep(time.Second)
 			continue
 		}
-		log.Printf("[FSM] rabbitmq(%p) start consuming...\n", r)
 
+		log.Printf("[FSM] rabbitmq(%p) start consuming...", r)
 		deliveries, err := r.channel.Consume(
 			r.queueName,
 			"",
@@ -102,7 +98,7 @@ func (r *RabbitmqClient) Consume() error {
 			nil,
 		)
 		if err != nil {
-			log.Printf("[FSM] rabbitmq(%p) consume Err: %v\n", r, err)
+			log.Printf("[FSM] rabbitmq(%p) consume Err: %v", r, err)
 			continue
 		}
 
@@ -114,7 +110,6 @@ func (r *RabbitmqClient) Consume() error {
 				Nack: func() error { return delivery.Nack(false, true) },
 			}
 		}
-
 	}
 }
 
@@ -145,13 +140,13 @@ func (f *Factory) GetMQSection() string {
 }
 
 func (f *Factory) InitMQ(config util.Config) error {
-	url := fmt.Sprintf(
-		"amqp://%s:%s@%s:%d%s",
-		config["user"], config["password"], config["host"], config["port"], config["vhost"],
+	f.MQ = NewRmqClient(
+		fmt.Sprintf("amqp://%s:%s@%s:%d%s",
+			config["user"], config["password"], config["host"], config["port"], config["vhost"],
+		),
+		config["queue"].(string),
 	)
-	queue := config["queue"].(string)
 
-	f.MQ = NewRmqClient(url, queue)
 	f.MQ.Start()
 	time.Sleep(time.Second) // time for establish connection
 
@@ -159,6 +154,7 @@ func (f *Factory) InitMQ(config util.Config) error {
 }
 
 func (f *Factory) Start() {
+	f.MQ.buffer = make(chan *mq.Message)
 	go f.MQ.Consume()
 }
 

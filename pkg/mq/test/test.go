@@ -24,7 +24,8 @@ func genMQ(t string) mq.IMQ {
 func main() {
 	q := genMQ("rmq")
 	conf := (*util.GetConfig())[q.GetMQSection()].(util.Config)
-	_ = q.InitMQ(conf)
+
+	q.InitMQ(conf)
 	q.Start()
 
 	go func() {
