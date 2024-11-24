@@ -66,7 +66,7 @@ func (r *RabbitmqClient) Reconnect() {
 
 		select {
 		case <-connClose:
-			log.Printf("[FSM] rabbitmq(%p) closed, reconnect...", r)
+			log.Printf("[FSM] rabbitmq(%p) closed, reconnect...\n", r)
 		}
 	}
 }
@@ -90,7 +90,7 @@ func (r *RabbitmqClient) Consume() error {
 			time.Sleep(time.Second)
 			continue
 		}
-		log.Println("[FSM] rabbitmq start consuming...")
+		log.Printf("[FSM] rabbitmq(%p) start consuming...\n", r)
 
 		deliveries, err := r.channel.Consume(
 			r.queueName,
@@ -102,7 +102,7 @@ func (r *RabbitmqClient) Consume() error {
 			nil,
 		)
 		if err != nil {
-			log.Printf("[FSM] rabbitmq consume Err: %v\n", err)
+			log.Printf("[FSM] rabbitmq(%p) consume Err: %v\n", r, err)
 			continue
 		}
 
