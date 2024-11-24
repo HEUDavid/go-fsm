@@ -10,13 +10,19 @@ go-fsm is a distributed state machine development framework. Its core feature is
 This project is `safe and reliable`, based on my successful practices in various financial business scenarios.
 
 ## Quick Start
-
 Add to go.mod
 
 ```
 require (
 	github.com/HEUDavid/go-fsm latest
 )
+```
+
+Maybe you can get started quickly by running a [DEMO](https://github.com/HEUDavid/go-fsm-demo).
+```bash
+git clone https://github.com/HEUDavid/go-fsm-demo.git
+cd go-fsm-demo
+go run cmd/main.go
 ```
 
 ## Example
