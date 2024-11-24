@@ -22,22 +22,16 @@ func genMQ(t string) mq.IMQ {
 }
 
 func main() {
-	_mq := genMQ("rmq")
-
-	config := (*util.GetConfig())[_mq.GetMQSection()].(util.Config)
-	if err := _mq.InitMQ(config); err != nil {
-		panic(err)
-	}
-
-	_mq.Start()
+	q := genMQ("rmq")
+	conf := (*util.GetConfig())[q.GetMQSection()].(util.Config)
+	_ = q.InitMQ(conf)
+	q.Start()
 
 	go func() {
 		for {
-			msg := _mq.FetchMessage(context.TODO())
+			msg := q.FetchMessage(context.TODO())
 			log.Printf("FetchMessage  : %s", msg.Body)
-
-			err := msg.Ack()
-			log.Println("ACK:", err)
+			log.Println("ACK:", msg.Ack())
 		}
 	}()
 
@@ -45,7 +39,7 @@ func main() {
 		idx := 0
 		for {
 			msg := fmt.Sprintf("Hello %d", idx)
-			err := _mq.PublishMessage(context.TODO(), msg)
+			err := q.PublishMessage(context.TODO(), msg)
 			if err != nil {
 				log.Printf("PublishMessage Err: %v", err)
 			} else {
@@ -57,6 +51,5 @@ func main() {
 	}()
 
 	forever := make(chan bool)
-	log.Println("Exit press CTRL+C...")
 	<-forever
 }
