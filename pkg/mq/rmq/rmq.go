@@ -5,37 +5,36 @@ import (
 	"fmt"
 	"github.com/HEUDavid/go-fsm/pkg/mq"
 	"github.com/HEUDavid/go-fsm/pkg/util"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"time"
-
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type RabbitmqClient struct {
-	conn           *amqp.Connection
-	channel        *amqp.Channel
-	url            string
-	queueName      string
-	consumerBuffer chan *mq.Message
-	done           chan bool
+	conn      *amqp.Connection
+	channel   *amqp.Channel
+	buffer    chan *mq.Message
+	url       string
+	queueName string
 }
 
-func (r *RabbitmqClient) Type() string {
-	if r.consumerBuffer == nil {
-		return "producer"
+func NewRmqClient(url, queue string) *RabbitmqClient {
+	return &RabbitmqClient{
+		buffer:    make(chan *mq.Message),
+		url:       url,
+		queueName: queue,
 	}
-	return "consumer"
 }
 
 func (r *RabbitmqClient) Connect() error {
 	var err error
 
 	if r.conn, err = amqp.Dial(r.url); err != nil {
-		return fmt.Errorf("dial Err: %v", err)
+		return err
 	}
 
 	if r.channel, err = r.conn.Channel(); err != nil {
-		return fmt.Errorf("channel Err: %v", err)
+		return err
 	}
 
 	if _, err = r.channel.QueueDeclare(
@@ -46,75 +45,37 @@ func (r *RabbitmqClient) Connect() error {
 		false,
 		nil,
 	); err != nil {
-		return fmt.Errorf("queueDeclare Err: %v", err)
-	}
-
-	if r.Type() == "producer" {
-		return nil
-	}
-
-	return r.Consume()
-}
-
-func (r *RabbitmqClient) Consume() error {
-	deliveries, err := r.channel.Consume(
-		r.queueName,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
 		return err
 	}
 
-	for delivery := range deliveries {
-		r.consumerBuffer <- &mq.Message{
-			C:    context.Background(),
-			Body: string(delivery.Body),
-			Ack:  func() error { return delivery.Ack(false) },
-			Nack: func() error { return delivery.Nack(false, true) },
-		}
-	}
+	log.Printf("[FSM] rabbitmq(%p) connect success.\n", r)
 	return nil
 }
 
 func (r *RabbitmqClient) Reconnect() {
 	for {
-		select {
-		case <-r.done:
-			return
-		default:
-		}
-
 		if err := r.Connect(); err != nil {
-			log.Printf("%s(%p) connect Err: %v\n", r.Type(), r, err)
-			time.Sleep(time.Second)
-
+			log.Printf("[FSM] rabbitmq(%p) connect Err: %v\n", r, err)
+			time.Sleep(time.Second * 2)
 			continue
 		}
 
+		// 阻塞监听通道关闭事件
 		connClose := make(chan *amqp.Error)
 		r.conn.NotifyClose(connClose)
 
 		select {
 		case <-connClose:
-			log.Printf("%s(%p) reconnect...", r.Type(), r)
-		case <-r.done:
-			return
+			log.Printf("[FSM] rabbitmq(%p) closed, reconnect...", r)
 		}
 	}
 }
 
 func (r *RabbitmqClient) Start() {
 	go r.Reconnect()
-	time.Sleep(time.Second)
 }
 
 func (r *RabbitmqClient) Stop() {
-	r.done <- true
 	if r.channel != nil {
 		_ = r.channel.Close()
 	}
@@ -123,9 +84,43 @@ func (r *RabbitmqClient) Stop() {
 	}
 }
 
+func (r *RabbitmqClient) Consume() error {
+	for {
+		if r.channel == nil || r.channel.IsClosed() {
+			time.Sleep(time.Second)
+			continue
+		}
+		log.Println("[FSM] rabbitmq start consuming...")
+
+		deliveries, err := r.channel.Consume(
+			r.queueName,
+			"",
+			false,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			log.Printf("[FSM] rabbitmq consume Err: %v\n", err)
+			continue
+		}
+
+		for delivery := range deliveries {
+			r.buffer <- &mq.Message{
+				C:    context.Background(),
+				Body: string(delivery.Body),
+				Ack:  func() error { return delivery.Ack(false) },
+				Nack: func() error { return delivery.Nack(false, true) },
+			}
+		}
+
+	}
+}
+
 func (r *RabbitmqClient) Publish(body string) error {
-	if r.conn == nil || r.conn.IsClosed() {
-		return fmt.Errorf("bad Connection")
+	if r.channel == nil || r.channel.IsClosed() {
+		return fmt.Errorf("bad rabbitmq channel")
 	}
 
 	return r.channel.Publish(
@@ -140,20 +135,9 @@ func (r *RabbitmqClient) Publish(body string) error {
 	)
 }
 
-func NewRmqClient(url, queue string, consumerBuffer chan *mq.Message) *RabbitmqClient {
-	return &RabbitmqClient{
-		url:            url,
-		queueName:      queue,
-		consumerBuffer: consumerBuffer,
-		done:           make(chan bool),
-	}
-}
-
 type Factory struct {
-	Section  string
-	buffer   chan *mq.Message
-	producer *RabbitmqClient
-	consumer *RabbitmqClient
+	Section string
+	MQ      *RabbitmqClient
 }
 
 func (f *Factory) GetMQSection() string {
@@ -167,21 +151,19 @@ func (f *Factory) InitMQ(config util.Config) error {
 	)
 	queue := config["queue"].(string)
 
-	f.consumer = NewRmqClient(url, queue, make(chan *mq.Message))
-	f.buffer = f.consumer.consumerBuffer
-
-	f.producer = NewRmqClient(url, queue, nil)
-	f.producer.Start()
+	f.MQ = NewRmqClient(url, queue)
+	f.MQ.Start()
+	time.Sleep(time.Second) // time for establish connection
 
 	return nil
 }
 
 func (f *Factory) PublishMessage(c context.Context, msg string) error {
-	return f.producer.Publish(msg)
+	return f.MQ.Publish(msg)
 }
 
 func (f *Factory) FetchMessage(c context.Context) mq.Message {
-	msg, ok := <-f.buffer
+	msg, ok := <-f.MQ.buffer
 	if !ok {
 		return mq.Message{C: c}
 	}
@@ -189,10 +171,9 @@ func (f *Factory) FetchMessage(c context.Context) mq.Message {
 }
 
 func (f *Factory) Start() {
-	f.consumer.Start()
+	go f.MQ.Consume()
 }
 
 func (f *Factory) Stop() {
-	f.producer.Stop()
-	f.consumer.Stop()
+	f.MQ.Stop()
 }
