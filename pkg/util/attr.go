@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"reflect"
 )
 
@@ -66,4 +67,9 @@ func ReflectNew(target interface{}) interface{} {
 func Assert[T any](val any) (T, bool) {
 	p, ok := val.(T)
 	return p, ok
+}
+
+func Pretty(v interface{}) string {
+	s, _ := json.MarshalIndent(v, "", "  ")
+	return string(s)
 }
