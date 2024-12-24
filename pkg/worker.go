@@ -74,17 +74,18 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 		log.Printf("[FSM] Finish handle %s %v", msg.Body, err)
 		if err != nil {
 			if msg.Nack != nil {
-				e := msg.Nack()
-				log.Printf("[FSM] NACK %s %v", msg.Body, e)
+				if e := msg.Nack(); e != nil {
+					log.Printf("[FSM] NACK %s ERROR: %v", msg.Body, e)
+				}
 			}
 			return
 		}
 		if msg.Ack != nil {
-			e := msg.Ack()
-			log.Printf("[FSM] ACK %s %v", msg.Body, e)
+			if e := msg.Ack(); e != nil {
+				log.Printf("[FSM] ACK %s ERROR: %v", msg.Body, e)
+			}
 		}
 	}()
-	log.Printf("[FSM] Start handle %s", msg.Body)
 
 	c := msg.C
 	taskID := msg.Body
