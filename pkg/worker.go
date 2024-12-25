@@ -71,7 +71,6 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 	}
 
 	defer func() {
-		log.Printf("[FSM] Finish handle %s %v", msg.Body, err)
 		if err != nil {
 			if msg.Nack != nil {
 				if e := msg.Nack(); e != nil {
@@ -112,6 +111,7 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 		return err
 	}
 
+	log.Printf("[FSM] State: %s, Task: %s", task.State, util.Pretty(task))
 	if err = handler.Handle(task); err != nil {
 		return err
 	}
@@ -124,6 +124,10 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 	if err = w.PublishMessage(c, taskID); err != nil {
 		return err
 	}
+
+	log.Printf("[FSM] Finish Task %s %s -> %s %v", msg.Body, *state, task.State,
+		util.Pretty(task),
+	)
 
 	return nil
 }
