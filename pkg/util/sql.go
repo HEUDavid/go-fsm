@@ -19,7 +19,7 @@ func parseUpdateSQL(sql string) ([]string, error) {
 
 func MergeUpdateSQL(sqlStr1, sqlStr2 string) (string, error) {
 	if sqlStr1 == "" || sqlStr2 == "" {
-		return "", fmt.Errorf("ToSQL error: %s, %s", sqlStr1, sqlStr2)
+		return "", fmt.Errorf("sql error: %s, %s", sqlStr1, sqlStr2)
 	}
 
 	sql1, err := parseUpdateSQL(sqlStr1)
