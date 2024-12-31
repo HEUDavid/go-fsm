@@ -23,6 +23,7 @@ type Base[Data DataEntity] struct {
 	mq.IMQ
 	FSM[Data]
 	GenID func() string // ID Generator
+	DEBUG bool
 }
 
 func (b *Base[Data]) RegisterModel(dataModel DataEntity, taskModel, uniqueRequestModel schema.Tabler) {
