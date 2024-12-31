@@ -44,7 +44,7 @@ func (r *RabbitmqClient) Connect() error {
 		return err
 	}
 
-	log.Printf("[FSM] rabbitmq(%p) connect success", r)
+	log.Printf("[FSM] rabbitmq(%p) connected successfully", r)
 	return nil
 }
 
