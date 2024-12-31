@@ -57,6 +57,9 @@ func (w *Worker[Data]) Run() {
 				defer func() { wg.Done(); <-sem }()
 
 				msg := w.FetchMessage(context.Background())
+				if !w.DEBUG {
+					log.Printf("[FSM] fetch msg %s", msg.Body)
+				}
 				if err := w.Handle(msg); err != nil {
 					log.Printf("[FSM] handle %s Err: %v", msg.Body, err)
 				}
