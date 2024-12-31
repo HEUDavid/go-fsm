@@ -58,7 +58,7 @@ func (w *Worker[Data]) Run() {
 
 				msg := w.FetchMessage(context.Background())
 				if err := w.Handle(msg); err != nil {
-					log.Printf("[FSM] Handle %s ERROR: %v", msg.Body, err)
+					log.Printf("[FSM] handle %s Err: %v", msg.Body, err)
 				}
 			}()
 		}
@@ -74,14 +74,14 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 		if err != nil {
 			if msg.Nack != nil {
 				if e := msg.Nack(); e != nil {
-					log.Printf("[FSM] NACK %s ERROR: %v", msg.Body, e)
+					log.Printf("[FSM] NACK %s Err: %v", msg.Body, e)
 				}
 			}
 			return
 		}
 		if msg.Ack != nil {
 			if e := msg.Ack(); e != nil {
-				log.Printf("[FSM] ACK %s ERROR: %v", msg.Body, e)
+				log.Printf("[FSM] ACK %s Err: %v", msg.Body, e)
 			}
 		}
 	}()
@@ -90,8 +90,8 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 	taskID := msg.Body
 
 	state, err := internal.QueryTaskState(c, w.GetDB(), w.Models, taskID)
-	log.Printf("[FSM] Task %s %s %v", taskID, *state, err)
 	if err != nil {
+		log.Printf("[FSM] query task %s %s Err: %v", taskID, *state, err)
 		return err
 	}
 
