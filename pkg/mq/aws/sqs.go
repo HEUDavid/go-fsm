@@ -73,7 +73,7 @@ func (f *Factory) Start() {
 				WaitTimeSeconds:     aws.Int64(20),
 			})
 			if err != nil {
-				log.Printf("[FSM] Error receiving message: %v", err)
+				log.Printf("[FSM] sqs receiving message Err: %v", err)
 				continue
 			}
 
