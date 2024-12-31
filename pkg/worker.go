@@ -111,7 +111,9 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 		return err
 	}
 
-	log.Printf("[FSM] State: %s, Task: %s", task.State, util.Pretty(task))
+	if !w.DEBUG {
+		log.Printf("[FSM] Load Task %s %s %s", task.ID, task.State, util.Pretty(task))
+	}
 	if err = handler.Handle(task); err != nil {
 		return err
 	}
@@ -125,9 +127,8 @@ func (w *Worker[Data]) Handle(msg Message) (err error) {
 		return err
 	}
 
-	log.Printf("[FSM] Finish Task %s %s -> %s %v", msg.Body, *state, task.State,
-		util.Pretty(task),
-	)
-
+	if !w.DEBUG {
+		log.Printf("[FSM] Finish Task %s %s -> %s %v", task.ID, *state, task.State, util.Pretty(task))
+	}
 	return nil
 }
