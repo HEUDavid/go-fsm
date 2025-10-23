@@ -2,12 +2,13 @@ package pkg
 
 import (
 	"context"
+	"log"
+	"sync"
+
 	"github.com/HEUDavid/go-fsm/internal"
 	. "github.com/HEUDavid/go-fsm/pkg/metadata"
 	. "github.com/HEUDavid/go-fsm/pkg/mq"
 	"github.com/HEUDavid/go-fsm/pkg/util"
-	"log"
-	"sync"
 )
 
 type IWorker[Data DataEntity] interface {
@@ -51,10 +52,9 @@ func (w *Worker[Data]) Run() {
 		var wg sync.WaitGroup
 		sem := make(chan struct{}, w.MaxGoroutines)
 		for {
-			wg.Add(1)
 			sem <- struct{}{}
-			go func() {
-				defer func() { wg.Done(); <-sem }()
+			wg.Go(func() {
+				defer func() { <-sem }()
 
 				msg := w.FetchMessage(context.Background())
 				if w.DEBUG {
@@ -63,7 +63,7 @@ func (w *Worker[Data]) Run() {
 				if err := w.Handle(msg); err != nil {
 					log.Printf("[FSM] handle %s Err: %v", msg.Body, err)
 				}
-			}()
+			})
 		}
 	}()
 }
